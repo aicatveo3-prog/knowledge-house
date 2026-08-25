@@ -1,149 +1,116 @@
-// ===== Theme Toggle =====
+// ===== Theme =====
 const themeToggle = document.getElementById('themeToggle');
 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
 
-function setTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('buffett-theme', theme);
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('buffett-theme', t);
 }
 
-// Initialize theme
-const storedTheme = localStorage.getItem('buffett-theme');
-if (storedTheme) {
-    setTheme(storedTheme);
-} else if (prefersDark.matches) {
-    setTheme('dark');
-}
+const stored = localStorage.getItem('buffett-theme');
+if (stored) setTheme(stored);
+else if (prefersDark.matches) setTheme('dark');
 
 themeToggle.addEventListener('click', () => {
-    const current = document.documentElement.getAttribute('data-theme');
-    setTheme(current === 'dark' ? 'light' : 'dark');
+  const cur = document.documentElement.getAttribute('data-theme');
+  setTheme(cur === 'dark' ? 'light' : 'dark');
 });
 
 prefersDark.addEventListener('change', (e) => {
-    if (!localStorage.getItem('buffett-theme')) {
-        setTheme(e.matches ? 'dark' : 'light');
-    }
+  if (!localStorage.getItem('buffett-theme')) setTheme(e.matches ? 'dark' : 'light');
 });
 
-// ===== Progress Bar =====
+// ===== Elements =====
 const progressBar = document.getElementById('progressBar');
-
-function updateProgress() {
-    const scrollTop = window.scrollY;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-    progressBar.style.width = `${Math.min(progress, 100)}%`;
-}
-
-// ===== Header Shadow =====
 const header = document.getElementById('siteHeader');
-
-function updateHeader() {
-    if (window.scrollY > 10) {
-        header.classList.add('scrolled');
-    } else {
-        header.classList.remove('scrolled');
-    }
-}
-
-// ===== Active Navigation =====
 const navLinks = document.querySelectorAll('.nav-link');
 const tocLinks = document.querySelectorAll('.toc-link');
 const sections = document.querySelectorAll('.year-section, .final-lessons');
 
-function updateActiveNav() {
-    const scrollPos = window.scrollY + 120;
-    let currentId = '';
-
-    sections.forEach((section) => {
-        const top = section.offsetTop;
-        const height = section.offsetHeight;
-        if (scrollPos >= top && scrollPos < top + height) {
-            currentId = section.getAttribute('id');
-        }
-    });
-
-    navLinks.forEach((link) => {
-        link.classList.toggle('active', link.getAttribute('href') === `#${currentId}`);
-    });
-
-    tocLinks.forEach((link) => {
-        link.classList.toggle('active', link.getAttribute('href') === `#${currentId}`);
-    });
+// ===== Scroll handlers =====
+function updateProgress() {
+  const h = document.documentElement.scrollHeight - window.innerHeight;
+  progressBar.style.width = `${h > 0 ? Math.min((window.scrollY / h) * 100, 100) : 0}%`;
 }
 
-// ===== Scroll Event (Throttled) =====
+function updateHeader() {
+  header.classList.toggle('scrolled', window.scrollY > 8);
+}
+
+function updateActiveNav() {
+  const pos = window.scrollY + 110;
+  let id = '';
+  sections.forEach((s) => {
+    if (pos >= s.offsetTop && pos < s.offsetTop + s.offsetHeight) id = s.id;
+  });
+  navLinks.forEach((l) => l.classList.toggle('active', l.getAttribute('href') === `#${id}`));
+  tocLinks.forEach((l) => l.classList.toggle('active', l.getAttribute('href') === `#${id}`));
+}
+
 let ticking = false;
 window.addEventListener('scroll', () => {
-    if (!ticking) {
-        window.requestAnimationFrame(() => {
-            updateProgress();
-            updateHeader();
-            updateActiveNav();
-            ticking = false;
-        });
-        ticking = true;
-    }
-});
-
-// ===== Smooth Scroll for Nav & TOC links =====
-document.querySelectorAll('.nav-link, .toc-link, .site-title').forEach((link) => {
-    link.addEventListener('click', (e) => {
-        const href = link.getAttribute('href');
-        if (href && href.startsWith('#')) {
-            e.preventDefault();
-            const target = document.getElementById(href.substring(1));
-            if (target) {
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else if (href === '#') {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        }
-    });
-});
-
-// ===== Scroll-triggered Animations (Intersection Observer) =====
-const animatedSelectors = [
-    '.summary-box', '.explain-box', '.tip-box', '.quote-box',
-    '.content-block', '.analogy-item', '.lesson-item', '.story-step',
-    '.key-concept', '.person-card', '.final-card', '.stat-card', '.req-card'
-];
-
-const animatedElements = document.querySelectorAll(animatedSelectors.join(', '));
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, index) => {
-        if (entry.isIntersecting) {
-            // Add staggered delay
-            const delay = Math.min(index * 50, 300);
-            setTimeout(() => {
-                entry.target.classList.add('animate-in');
-            }, delay);
-            observer.unobserve(entry.target);
-        }
-    });
-}, {
-    root: null,
-    rootMargin: '0px 0px -40px 0px',
-    threshold: 0.1,
-});
-
-animatedElements.forEach((el) => observer.observe(el));
-
-// ===== Keyboard Shortcut =====
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'd' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        const active = document.activeElement;
-        if (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') return;
-        const current = document.documentElement.getAttribute('data-theme');
-        setTheme(current === 'dark' ? 'light' : 'dark');
-    }
-});
-
-// ===== Initial State =====
-document.addEventListener('DOMContentLoaded', () => {
+  if (ticking) return;
+  ticking = true;
+  window.requestAnimationFrame(() => {
     updateProgress();
     updateHeader();
     updateActiveNav();
+    ticking = false;
+  });
+}, { passive: true });
+
+// ===== Smooth scroll =====
+document.querySelectorAll('.nav-link, .toc-link, .site-title').forEach((link) => {
+  link.addEventListener('click', (e) => {
+    const href = link.getAttribute('href');
+    if (!href || !href.startsWith('#')) return;
+    e.preventDefault();
+    const target = document.getElementById(href.slice(1));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+// ===== Reveal animation =====
+const revealSelectors = [
+  '.summary-box', '.explain-box', '.tip-box', '.why-box', '.warning-box',
+  '.insight-box', '.setup-box', '.quote-box', '.term', '.def-card',
+  '.key-concept', '.calc-box', '.data-table-wrapper', '.fact', '.ts-item',
+  '.story-step', '.coin-card', '.compare-col', '.mirror-card', '.person-card',
+  '.person-mini', '.req-card', '.analogy-item', '.myth', '.qa',
+  '.lesson-item', '.checklist-box', '.final-card', '.connect', '.check-card',
+  '.ready-box', '.hero-guide'
+].join(', ');
+
+const revealEls = document.querySelectorAll(revealSelectors);
+
+if ('IntersectionObserver' in window) {
+  revealEls.forEach((el) => el.classList.add('anim'));
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('in');
+      io.unobserve(entry.target);
+    });
+  }, { rootMargin: '0px 0px -30px 0px', threshold: 0.05 });
+
+  revealEls.forEach((el) => io.observe(el));
+}
+
+// ===== Keyboard: press D to toggle theme =====
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'd' && e.key !== 'D') return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const tag = document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  const cur = document.documentElement.getAttribute('data-theme');
+  setTheme(cur === 'dark' ? 'light' : 'dark');
+});
+
+// ===== Init =====
+document.addEventListener('DOMContentLoaded', () => {
+  updateProgress();
+  updateHeader();
+  updateActiveNav();
 });
