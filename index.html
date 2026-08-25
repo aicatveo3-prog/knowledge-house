@@ -3,459 +3,1152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>버핏의 투자 철학 — 버크셔 해서웨이 주주서한 정리 (2003–2010)</title>
+    <title>버핏의 투자 수업 — 버크셔 해서웨이 주주서한 쉽게 읽기 (2003–2010)</title>
+    <meta name="description" content="워렌 버핏의 버크셔 해서웨이 주주서한(2003-2010)을 초보자도 쉽게 이해할 수 있도록 구조화하여 정리한 사이트입니다.">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- 헤더 & 네비게이션 -->
-    <header class="site-header">
+    <!-- 읽기 진행률 바 -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- 헤더 -->
+    <header class="site-header" id="siteHeader">
         <div class="header-inner">
-            <h1 class="site-title">
-                <span class="title-accent">워렌 버핏</span> 주주서한 정리
-            </h1>
-            <p class="site-subtitle">버크셔 해서웨이 연례 서한에서 뽑은 핵심 투자 철학 (2003–2010)</p>
+            <a href="#" class="site-title">
+                <span class="title-icon">📚</span>
+                <span class="title-text">버핏의 투자 수업</span>
+            </a>
+            <nav class="year-nav" id="yearNav">
+                <a href="#year-2003" class="nav-link active">2003</a>
+                <a href="#year-2004" class="nav-link">2004</a>
+                <a href="#year-2005" class="nav-link">2005</a>
+                <a href="#year-2006" class="nav-link">2006</a>
+                <a href="#year-2010" class="nav-link">2010</a>
+            </nav>
             <button class="theme-toggle" id="themeToggle" aria-label="다크모드 전환">
                 <span class="icon-sun">☀️</span>
                 <span class="icon-moon">🌙</span>
             </button>
         </div>
-        <nav class="year-nav" id="yearNav">
-            <ul>
-                <li><a href="#year-2003" class="nav-link active">2003</a></li>
-                <li><a href="#year-2004" class="nav-link">2004</a></li>
-                <li><a href="#year-2005" class="nav-link">2005</a></li>
-                <li><a href="#year-2006" class="nav-link">2006</a></li>
-                <li><a href="#year-2010" class="nav-link">2010</a></li>
-            </ul>
-        </nav>
     </header>
 
-    <!-- 인트로 섹션 -->
-    <section class="intro">
+    <!-- 히어로 / 인트로 -->
+    <section class="hero">
         <div class="container">
-            <blockquote class="hero-quote">
-                "수익을 위해 기준을 완화하는 행위는 가끔 유효 기간이 지난 치즈를 먹는 것과 같습니다."
-                <cite>— 워렌 버핏, 2003년 주주서한</cite>
-            </blockquote>
-            <p class="intro-text">
-                이 사이트는 워렌 버핏이 2003년부터 2010년까지 버크셔 해서웨이 주주들에게 보낸 연례 서한에서 
-                핵심 투자 철학과 통찰을 연도별로 정리한 것입니다. 각 연도의 제목은 서한에서 가장 인상적인 
-                비유나 메시지를 요약합니다.
+            <h1 class="hero-title">
+                워렌 버핏이 주주들에게<br>
+                <span class="accent">직접 들려준 투자 이야기</span>
+            </h1>
+            <p class="hero-desc">
+                매년 버크셔 해서웨이 주주들에게 보내는 편지에는 
+                수십 년간 쌓은 투자 지혜가 담겨 있습니다.<br>
+                이 사이트는 <strong>2003~2010년 서한의 핵심</strong>을 
+                <em>누구나 이해할 수 있도록</em> 쉽게 풀어 정리한 것입니다.
             </p>
+
+            <div class="hero-guide">
+                <h2>📖 이 사이트를 읽는 법</h2>
+                <p>각 연도는 다음과 같은 구조로 되어 있어요:</p>
+                <ol>
+                    <li><strong>한줄 요약</strong> — 그 해의 핵심 메시지를 한 문장으로</li>
+                    <li><strong>배경 설명</strong> — 왜 이 이야기가 나왔는지, 당시 상황은 어땠는지</li>
+                    <li><strong>핵심 내용</strong> — 버핏이 실제로 한 말과 행동</li>
+                    <li><strong>쉬운 비유</strong> — 일상에 빗대어 한 번 더 이해하기</li>
+                    <li><strong>실전 교훈</strong> — 우리가 가져갈 수 있는 것</li>
+                </ol>
+            </div>
         </div>
     </section>
 
-    <!-- 메인 콘텐츠 -->
+    <!-- 목차 (사이드바) -->
+    <aside class="toc" id="toc">
+        <h3 class="toc-title">📋 목차</h3>
+        <ul class="toc-list">
+            <li><a href="#year-2003" class="toc-link active">2003 · 유효 기간 지난 치즈</a></li>
+            <li><a href="#year-2004" class="toc-link">2004 · 콩깍지를 벗겨준 책</a></li>
+            <li><a href="#year-2005" class="toc-link">2005 · 뉴턴의 제4법칙</a></li>
+            <li><a href="#year-2006" class="toc-link">2006 · 효율적 시장 가설의 허점</a></li>
+            <li><a href="#year-2010" class="toc-link">2010 · 사명감 있는 펀드매니저</a></li>
+            <li><a href="#lessons" class="toc-link">📌 핵심 교훈 모음</a></li>
+        </ul>
+    </aside>
+
+    <!-- ==================== 메인 콘텐츠 ==================== -->
     <main class="content">
 
-        <!-- 2003년 -->
+        <!-- ========== 2003년 ========== -->
         <article class="year-section" id="year-2003">
             <div class="container">
+
+                <!-- 연도 헤더 -->
                 <div class="year-header">
                     <span class="year-badge">2003</span>
                     <h2 class="year-title">유효 기간이 지난 치즈</h2>
-                    <p class="year-theme">위험 관리와 인내의 투자</p>
                 </div>
 
-                <div class="content-grid">
-                    <!-- 핵심 메시지 -->
-                    <div class="card card-primary">
-                        <h3>🧀 핵심 비유</h3>
+                <!-- 1. 한줄 요약 -->
+                <div class="summary-box">
+                    <p class="summary-label">💡 한줄 요약</p>
+                    <p class="summary-text">
+                        "조금 더 벌려고 위험을 높이는 것은 유통기한 지난 치즈를 먹는 것이다."
+                    </p>
+                </div>
+
+                <!-- 2. 배경 설명 -->
+                <section class="explain-section">
+                    <h3 class="section-heading">🔍 배경: 2003년에 무슨 일이 있었나?</h3>
+                    
+                    <div class="explain-box">
                         <p>
-                            수익을 조금 더 높이려고 신용 기준을 완화하거나 만기를 늘리는 행위는 
-                            <strong>"유효 기간이 지난 치즈를 먹는 것"</strong>과 같다. 
-                            적정한 보상을 받을 수 없다면 조금이라도 위험이 증가하는 것을 극도로 경계해야 한다.
+                            2000~2002년, 닷컴 버블이 꺼지고 엔론(Enron) 같은 대형 회계 스캔들이 터졌습니다. 
+                            주식시장이 3년 연속 하락한 뒤라 투자자들은 불안했고, 
+                            많은 사람이 <strong>"조금이라도 수익률이 높은 곳"</strong>을 찾아 돈을 옮기고 있었습니다.
                         </p>
-                    </div>
-
-                    <!-- 포트폴리오 철학 -->
-                    <div class="card">
-                        <h3>📊 장기 보유 철학</h3>
-                        <ul class="insight-list">
-                            <li>웰스파고 주식을 추가 매입 — 나머지 5대 종목의 보유 수량은 수년~수십 년간 불변</li>
-                            <li>코카콜라(1994년), 아메리칸 익스프레스(1998년), 질레트(1989년), 워싱턴포스트(1973년), 무디스(2000년) 이후 매매 없음</li>
-                            <li>"주식 중개인들은 우리를 좋아하지 않습니다"</li>
-                        </ul>
-                    </div>
-
-                    <!-- 정크본드 -->
-                    <div class="card">
-                        <h3>💰 정크본드 투자</h3>
                         <p>
-                            2002년 정크본드가 매우 싸졌을 때 약 80억 달러어치를 사들였다. 
-                            그러나 2003년에는 상황이 급변해 이 섹터가 매력을 잃었다.
+                            한편 버핏은 이 시기를 "기회"로 보고 과감하게 움직였습니다. 
+                            2002년에 정크본드(고위험 채권)를 80억 달러나 사들였고, 
+                            처음으로 외환시장에도 진입했습니다. 그러나 2003년이 되자 
+                            정크본드 가격이 이미 올라 매력이 사라졌습니다.
                         </p>
-                        <p class="highlight-text">"어제는 잡초였는데 오늘은 꽃으로 평가받고 있습니다."</p>
                     </div>
 
-                    <!-- 외환 계약 -->
-                    <div class="card">
-                        <h3>🌍 외환 포지션</h3>
+                    <div class="tip-box">
+                        <p class="tip-label">💬 쉽게 말하면</p>
                         <p>
-                            2002년 처음 외환시장에 진입, 2003년 포지션 확대. 달러 약세를 예상해 
-                            약 120억 달러 규모의 외환 계약을 5개 통화로 분산 체결.
-                        </p>
-                        <p class="subtle-text">
-                            "예언자들의 묘지에는 거시경제 예측가들에게 방대한 면적이 배정되어 있습니다."
+                            마트에서 세일 할 때 싸게 사두면 이득이지만, 
+                            세일이 끝난 뒤 정상가에 사면 이득이 없는 것과 같습니다.
+                            버핏은 "세일 중"일 때만 과감하게 샀습니다.
                         </p>
                     </div>
+                </section>
 
-                    <!-- 실현 이익 표 -->
-                    <div class="card card-wide">
-                        <h3>📋 2003년 유형별 실현 이익</h3>
-                        <div class="table-wrapper">
-                            <table>
+                <!-- 3. 핵심 내용 -->
+                <section class="explain-section">
+                    <h3 class="section-heading">📖 핵심 내용</h3>
+
+                    <div class="content-block">
+                        <h4>① 장기 보유 철학 — "우리는 주식을 팔지 않습니다"</h4>
+                        <p>
+                            버핏은 2003년에 웰스파고(Wells Fargo) 주식만 추가 매입했습니다. 
+                            나머지 5대 종목은 <strong>수년에서 수십 년간 단 한 주도 사고팔지 않았습니다.</strong>
+                        </p>
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>유형</th>
-                                        <th>세전 이익 (백만 달러)</th>
+                                        <th>종목</th>
+                                        <th>마지막 매매 연도</th>
+                                        <th>보유 기간 (2003년 기준)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td>보통주</td><td>448</td></tr>
-                                    <tr><td>미국 국채</td><td>1,485</td></tr>
-                                    <tr><td>정크본드</td><td>1,138</td></tr>
-                                    <tr><td>외환 계약</td><td>825</td></tr>
-                                    <tr><td>기타</td><td>233</td></tr>
-                                    <tr class="table-total"><td><strong>합계</strong></td><td><strong>4,129</strong></td></tr>
+                                    <tr><td>코카콜라</td><td>1994년</td><td>9년</td></tr>
+                                    <tr><td>아메리칸 익스프레스</td><td>1998년</td><td>5년</td></tr>
+                                    <tr><td>질레트</td><td>1989년</td><td>14년</td></tr>
+                                    <tr><td>워싱턴포스트</td><td>1973년</td><td>30년</td></tr>
+                                    <tr><td>무디스</td><td>2000년</td><td>3년</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="result-text">
+                            → 결과: "그래서 주식 중개인들은 우리를 좋아하지 않습니다." (버핏)
+                        </p>
+                    </div>
+
+                    <div class="content-block">
+                        <h4>② 정크본드 투자 — "어제는 잡초, 오늘은 꽃"</h4>
+                        <p>
+                            <strong>정크본드란?</strong> 신용등급이 낮은 기업이 발행하는 채권입니다. 
+                            부도 위험이 크지만 그만큼 이자를 많이 줍니다.
+                        </p>
+                        <p>
+                            2002년, 시장이 공포에 빠져 이 채권들이 터무니없이 싸졌을 때 
+                            버핏은 약 80억 달러어치를 사들였습니다. 
+                            그러나 2003년에는 시장이 회복되면서 가격이 정상으로 돌아왔고, 
+                            더 이상 매력적이지 않게 되었습니다.
+                        </p>
+                        <div class="quote-box">
+                            <p>"어제는 잡초였는데 오늘은 꽃으로 평가받고 있습니다."</p>
+                        </div>
+                    </div>
+
+                    <div class="content-block">
+                        <h4>③ 외환 투자 — 달러 약세에 베팅</h4>
+                        <p>
+                            버핏은 2002년 처음으로 외환시장에 진입했고, 
+                            2003년에는 5개 통화로 약 120억 달러 규모의 계약을 맺었습니다. 
+                            미국의 경상수지 적자가 커지면서 달러 가치가 떨어질 것이라 판단한 것입니다.
+                        </p>
+                        <p>
+                            하지만 버핏은 자신의 거시경제 예측에 대해서도 겸손했습니다:
+                        </p>
+                        <div class="quote-box">
+                            <p>"예언자들의 묘지에는 거시경제 예측가들에게 방대한 면적이 배정되어 있습니다."</p>
+                        </div>
+                    </div>
+
+                    <div class="content-block">
+                        <h4>④ 2003년 투자 수익 내역</h4>
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>투자 유형</th>
+                                        <th>세전 이익</th>
+                                        <th>쉬운 설명</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>보통주</td>
+                                        <td>4.48억 달러</td>
+                                        <td>일반 주식에서 나온 소액 이익</td>
+                                    </tr>
+                                    <tr>
+                                        <td>미국 국채</td>
+                                        <td>14.85억 달러</td>
+                                        <td>정부 빚 문서(가장 안전한 투자)의 매매 차익</td>
+                                    </tr>
+                                    <tr>
+                                        <td>정크본드</td>
+                                        <td>11.38억 달러</td>
+                                        <td>싸게 산 고위험 채권의 이익</td>
+                                    </tr>
+                                    <tr>
+                                        <td>외환 계약</td>
+                                        <td>8.25억 달러</td>
+                                        <td>달러 약세 베팅 수익</td>
+                                    </tr>
+                                    <tr>
+                                        <td>기타</td>
+                                        <td>2.33억 달러</td>
+                                        <td>—</td>
+                                    </tr>
+                                    <tr class="table-total">
+                                        <td><strong>합계</strong></td>
+                                        <td><strong>41.29억 달러</strong></td>
+                                        <td>약 5조 원 (당시 환율 기준)</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                </div>
+                </section>
+
+                <!-- 4. 쉬운 비유 -->
+                <section class="explain-section">
+                    <h3 class="section-heading">🎯 쉬운 비유로 이해하기</h3>
+                    
+                    <div class="analogy-box">
+                        <div class="analogy-item">
+                            <span class="analogy-icon">🧀</span>
+                            <div>
+                                <h4>유통기한 지난 치즈</h4>
+                                <p>
+                                    냉장고에 치즈가 있습니다. 유통기한이 지났지만 버리기 아깝습니다. 
+                                    "한 입만 먹어볼까?" 대부분은 괜찮겠지만, 
+                                    어쩌다 한 번은 심하게 배탈이 납니다.
+                                </p>
+                                <p>
+                                    <strong>투자에서도 마찬가지입니다.</strong> 
+                                    금리가 낮을 때 "조금만 더 벌어보자"며 
+                                    신용 등급이 낮은 채권을 사거나, 이상한 파생상품에 손대면 — 
+                                    대부분은 괜찮지만, 한 번 터지면 원금을 날립니다.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="analogy-item">
+                            <span class="analogy-icon">🌱</span>
+                            <div>
+                                <h4>잡초와 꽃</h4>
+                                <p>
+                                    같은 식물인데 어제는 "잡초"라고 무시하다가 
+                                    오늘은 "꽃"이라며 비싸게 사려는 사람들이 있습니다.
+                                </p>
+                                <p>
+                                    <strong>버핏의 교훈:</strong> 
+                                    남들이 "잡초"라고 무시할 때 사고, 
+                                    "꽃"이라고 비싸게 부를 때는 더 이상 안 삽니다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. 실전 교훈 -->
+                <section class="explain-section">
+                    <h3 class="section-heading">✅ 실전 교훈</h3>
+                    <div class="lesson-box">
+                        <div class="lesson-item">
+                            <span class="lesson-num">1</span>
+                            <div>
+                                <h4>수익을 위해 기준을 낮추지 마라</h4>
+                                <p>이자가 1% 더 높다고 위험한 상품에 돈을 넣으면, 얻는 것보다 잃을 때 훨씬 크다.</p>
+                            </div>
+                        </div>
+                        <div class="lesson-item">
+                            <span class="lesson-num">2</span>
+                            <div>
+                                <h4>좋은 주식은 안 팔아도 된다</h4>
+                                <p>탁월한 기업의 주식은 수십 년 보유해도 좋다. 자주 사고팔면 수수료와 세금만 나간다.</p>
+                            </div>
+                        </div>
+                        <div class="lesson-item">
+                            <span class="lesson-num">3</span>
+                            <div>
+                                <h4>공포 속에서 기회를 잡아라</h4>
+                                <p>남들이 겁에 질려 헐값에 내놓을 때가 진짜 '세일 기간'이다. 하지만 세일이 끝나면 미련 없이 물러나라.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
             </div>
         </article>
 
-        <!-- 2004년 -->
+        <!-- ========== 2004년 ========== -->
         <article class="year-section" id="year-2004">
             <div class="container">
+
                 <div class="year-header">
                     <span class="year-badge">2004</span>
                     <h2 class="year-title">내 눈의 콩깍지를 벗겨준 책</h2>
-                    <p class="year-theme">가치투자의 기원과 장기 보유의 힘</p>
                 </div>
 
-                <div class="content-grid">
-                    <!-- 벤저민 그레이엄 -->
-                    <div class="card card-primary">
-                        <h3>📖 투자 인생의 전환점</h3>
-                        <p>
-                            19세에 벤저민 그레이엄의 <em>《현명한 투자자》</em>를 읽고 
-                            <strong>"눈에 씌었던 콩깍지가 떨어져 나갔다."</strong> 
-                            주식을 차트 패턴이나 단기 예측이 아닌, 
-                            <strong>회사 일부에 대한 소유권</strong>으로 보는 관점이 투자의 토대가 되었다.
-                        </p>
-                    </div>
-
-                    <!-- 4대 종목 실적 -->
-                    <div class="card">
-                        <h3>🏢 4대 종목의 12.5년 성적표</h3>
-                        <ul class="insight-list">
-                            <li>총 투자액: <strong>38억 3,000만 달러</strong> (1988.5~2003.10 매입)</li>
-                            <li>2004년 버크셔 몫 이익: <strong>12억 달러</strong> (매입원가의 31.3%)</li>
-                            <li>2004년까지 받은 총 배당: <strong>4억 3,400만 달러</strong> (원가의 11.3%)</li>
-                        </ul>
-                        <p class="subtle-text">극적인 수준은 아니지만 대체로 만족스러운 실적</p>
-                    </div>
-
-                    <!-- 백미러 vs 전면유리 -->
-                    <div class="card">
-                        <h3>🚗 백미러와 전면 유리</h3>
-                        <p>
-                            시장 등락을 포착해 매매했다면 실적이 훨씬 좋았을 것이다. 
-                            그러나 <strong>"잘 보이는 백미러를 통해 시장을 보면 항상 쉬워 보이는 법"</strong>이다. 
-                            투자자들이 응시할 수밖에 없는 전면 유리는 항상 뿌옇다.
-                        </p>
-                    </div>
-
-                    <!-- 자기 반성 -->
-                    <div class="card">
-                        <h3>🪞 솔직한 자기 반성</h3>
-                        <p>
-                            거품 시기에 보유 종목이 과대평가되었다고 말은 했지만, 
-                            과대평가 수준을 과소평가했다. 
-                            <strong>"행동해야 할 때 말만 앞세웠다"</strong>는 점은 비난받아 마땅하다.
-                        </p>
-                    </div>
-
-                    <!-- 현금 포지션 -->
-                    <div class="card">
-                        <h3>💵 430억 달러의 현금</h3>
-                        <p>
-                            수익률이 보잘것없는 현금성 자산 430억 달러를 보유한 상황은 유쾌하지 않다. 
-                            대기업 인수나 지분 매입을 원하지만, 
-                            <strong>합리적인 수익률을 기대할 수 있는 가격일 때만</strong> 행동한다.
-                        </p>
-                    </div>
+                <div class="summary-box">
+                    <p class="summary-label">💡 한줄 요약</p>
+                    <p class="summary-text">
+                        "주식은 종이쪽지가 아니라 회사의 일부를 소유하는 것이다."
+                    </p>
                 </div>
+
+                <section class="explain-section">
+                    <h3 class="section-heading">🔍 배경: 버핏의 투자 인생이 바뀐 순간</h3>
+                    
+                    <div class="explain-box">
+                        <p>
+                            버핏은 어릴 때부터 주식시장에 매료되었지만, 19세 이전에는 
+                            <strong>투자하는 '방법'을 전혀 몰랐습니다.</strong> 
+                            차트를 보거나, 남들 말을 듣거나, 감으로 매매했을 뿐입니다.
+                        </p>
+                        <p>
+                            그러다 19세에 벤저민 그레이엄의 《현명한 투자자(The Intelligent Investor)》를 읽고 
+                            완전히 새로운 세계가 열렸습니다. 
+                            이 책의 핵심 메시지는 단순합니다:
+                        </p>
+                        <div class="quote-box">
+                            <p>"주식을 사는 것은 그 회사의 일부를 사는 것이다. 
+                            주가는 매일 변하지만, 회사의 가치는 그렇게 빠르게 변하지 않는다."</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="explain-section">
+                    <h3 class="section-heading">📖 핵심 내용</h3>
+
+                    <div class="content-block">
+                        <h4>① 4대 종목의 12.5년 성적표</h4>
+                        <p>
+                            버핏은 아메리칸 익스프레스, 코카콜라, 질레트, 웰스파고 — 
+                            이 네 회사에 총 <strong>38억 3천만 달러</strong>를 투자했습니다 
+                            (1988년 5월~2003년 10월에 걸쳐).
+                        </p>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <span class="stat-number">38.3억$</span>
+                                <span class="stat-desc">총 투자 원금</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-number">12억$</span>
+                                <span class="stat-desc">2004년 이익 (버크셔 몫)</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-number">31.3%</span>
+                                <span class="stat-desc">이익/원가 비율</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-number">4.34억$</span>
+                                <span class="stat-desc">누적 배당금 수령</span>
+                            </div>
+                        </div>
+
+                        <div class="tip-box">
+                            <p class="tip-label">🤔 이게 왜 대단한 건가요?</p>
+                            <p>
+                                매년 원금의 31%를 이익으로 받는다는 것은, 
+                                1억 원짜리 아파트를 사서 매년 3,100만 원의 월세를 받는 것과 비슷합니다. 
+                                게다가 아파트값(주가) 자체도 올랐습니다.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="content-block">
+                        <h4>② 백미러와 전면 유리</h4>
+                        <p>
+                            "시장이 오를 때 팔고 내릴 때 사면 되지 않나?"라고 생각할 수 있습니다. 
+                            버핏은 이에 대해 솔직하게 말합니다:
+                        </p>
+                        <div class="quote-box">
+                            <p>"잘 보이는 백미러를 통해 시장을 보면 항상 쉬워 보이는 법입니다. 
+                            그러나 투자자들이 응시할 수밖에 없는 전면 유리는 항상 뿌옇기 마련입니다."</p>
+                        </div>
+                        <div class="tip-box">
+                            <p class="tip-label">💬 쉽게 말하면</p>
+                            <p>
+                                <strong>백미러</strong> = 이미 지나간 과거. "아, 그때 삼성전자를 샀어야 했는데!"<br>
+                                <strong>전면 유리</strong> = 아직 오지 않은 미래. 안개가 껴서 아무것도 안 보임.<br><br>
+                                과거를 보면 누구나 천재 투자자가 될 수 있지만, 
+                                실제로 미래를 예측하며 매매하는 것은 거의 불가능합니다.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="content-block">
+                        <h4>③ 버핏의 솔직한 자기 반성</h4>
+                        <p>
+                            2000년 닷컴 버블 당시, 버핏은 보유 종목이 과대평가되었다고 느꼈지만 
+                            팔지 않았습니다. 나중에 이렇게 고백합니다:
+                        </p>
+                        <div class="quote-box">
+                            <p>"나는 행동해야 할 때 말만 앞세웠습니다."</p>
+                        </div>
+                        <p>
+                            세계 최고의 투자자도 타이밍을 맞추는 데 실패합니다. 
+                            그래서 버핏은 <strong>"타이밍을 맞추려 하지 말고, 좋은 기업을 오래 보유하라"</strong>는 
+                            원칙을 더 강하게 지킵니다.
+                        </p>
+                    </div>
+
+                    <div class="content-block">
+                        <h4>④ 430억 달러의 현금 — 인내의 대가</h4>
+                        <p>
+                            2004년 말, 버크셔는 430억 달러(약 50조 원)의 현금을 보유하고 있었습니다. 
+                            수익률이 보잘것없는 현금을 이렇게 쌓아두는 건 유쾌하지 않지만, 
+                            버핏은 <strong>"합리적인 가격이 아니면 절대 사지 않는다"</strong>는 원칙을 굽히지 않았습니다.
+                        </p>
+                    </div>
+                </section>
+
+                <section class="explain-section">
+                    <h3 class="section-heading">🎯 쉬운 비유로 이해하기</h3>
+                    
+                    <div class="analogy-box">
+                        <div class="analogy-item">
+                            <span class="analogy-icon">🏠</span>
+                            <div>
+                                <h4>집을 사는 것과 같다</h4>
+                                <p>
+                                    좋은 동네에 튼튼한 집을 사면, 부동산 시세가 오르락내리락해도 
+                                    살면서 가치를 누립니다. 매일 "내 집값이 올랐나 내렸나" 
+                                    확인하며 불안해하지 않죠.
+                                </p>
+                                <p>
+                                    <strong>버핏의 주식 투자도 이와 같습니다.</strong> 
+                                    코카콜라나 질레트 같은 "좋은 동네의 튼튼한 집"을 사서 
+                                    수십 년간 보유하며 "월세(배당)"를 받습니다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="explain-section">
+                    <h3 class="section-heading">✅ 실전 교훈</h3>
+                    <div class="lesson-box">
+                        <div class="lesson-item">
+                            <span class="lesson-num">1</span>
+                            <div>
+                                <h4>주식 = 회사의 일부 소유권</h4>
+                                <p>종이쪽지나 차트의 선이 아니라, 실제 사업체의 일부를 사는 것이다.</p>
+                            </div>
+                        </div>
+                        <div class="lesson-item">
+                            <span class="lesson-num">2</span>
+                            <div>
+                                <h4>타이밍은 신도 모른다</h4>
+                                <p>시장의 등락을 예측해 매매하는 것은 버핏조차 실패했다. 예측 대신 원칙을 지켜라.</p>
+                            </div>
+                        </div>
+                        <div class="lesson-item">
+                            <span class="lesson-num">3</span>
+                            <div>
+                                <h4>현금은 '기회의 화약'이다</h4>
+                                <p>당장 수익이 없어 답답해도, 좋은 기회가 왔을 때 쏠 수 있는 현금을 확보해두라.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
             </div>
         </article>
 
-        <!-- 2005년 -->
+        <!-- ========== 2005년 ========== -->
         <article class="year-section" id="year-2005">
             <div class="container">
+
                 <div class="year-header">
                     <span class="year-badge">2005</span>
                     <h2 class="year-title">뉴턴의 제4 운동 법칙</h2>
-                    <p class="year-theme">마찰 비용과 금융 중개인의 문제</p>
                 </div>
 
-                <div class="content-grid">
-                    <!-- 제4법칙 -->
-                    <div class="card card-primary">
-                        <h3>🍎 뉴턴의 제4 운동 법칙</h3>
-                        <blockquote class="card-quote">
-                            "투자자 전체로 보면, 운동량이 증가할수록 수익은 감소한다."
-                        </blockquote>
+                <div class="summary-box">
+                    <p class="summary-label">💡 한줄 요약</p>
+                    <p class="summary-text">
+                        "투자자 전체로 보면, 많이 움직일수록 돈을 적게 번다."
+                    </p>
+                </div>
+
+                <section class="explain-section">
+                    <h3 class="section-heading">🔍 배경: 왜 이 이야기를 했을까?</h3>
+                    
+                    <div class="explain-box">
                         <p>
-                            뉴턴은 남해회사 거품에서 막대한 손실을 보고 말했다: 
-                            "천체의 움직임은 계산할 수 있지만 사람들의 광기는 계산할 수가 없더군요."
+                            2005년은 헤지펀드 열풍이 절정이던 시기입니다. 
+                            "전문가에게 맡기면 시장을 이길 수 있다"는 믿음이 확산되었고, 
+                            온갖 종류의 금융 중개인(브로커, 펀드매니저, 컨설턴트, 헤지펀드)이 번성했습니다.
+                        </p>
+                        <p>
+                            버핏은 이 현상을 보고, <strong>중개인들이 가져가는 비용(마찰 비용)</strong>이 
+                            투자자 전체의 수익을 얼마나 갉아먹는지를 
+                            "고트락스(Gotrocks) 가문"이라는 우화로 설명합니다.
                         </p>
                     </div>
+                </section>
 
-                    <!-- 고트락스 비유 -->
-                    <div class="card card-wide">
-                        <h3>👨‍👩‍👧‍👦 고트락스(Gotrocks) 가문의 우화</h3>
-                        <div class="timeline">
-                            <div class="timeline-item">
-                                <span class="timeline-step">1단계</span>
-                                <p>가문이 모든 미국 기업을 보유 → 매년 약 7,000억 달러 이익을 온전히 향유</p>
+                <section class="explain-section">
+                    <h3 class="section-heading">📖 핵심 내용</h3>
+
+                    <div class="content-block">
+                        <h4>① 근본 진실 — "파이는 정해져 있다"</h4>
+                        <p>
+                            투자의 가장 기본적인 산수를 먼저 이해해야 합니다:
+                        </p>
+                        <div class="key-concept">
+                            <p class="concept-formula">
+                                전체 투자자의 수익 = 전체 기업의 이익 − 마찰 비용
+                            </p>
+                            <p class="concept-explain">
+                                기업이 벌어들이는 총 이익은 정해져 있습니다. 
+                                투자자 A가 많이 벌면 투자자 B는 적게 벌 수밖에 없습니다. 
+                                그리고 중간에서 수수료를 가져가는 사람이 많을수록, 
+                                투자자 전체가 가져가는 몫은 줄어듭니다.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="content-block">
+                        <h4>② 고트락스 가문의 우화 — 단계별로 읽기</h4>
+                        <p>
+                            한 가문이 미국의 모든 기업을 소유한다고 상상해보세요. 
+                            이 가문이 어떻게 점점 가난해지는지 보여주는 이야기입니다:
+                        </p>
+                        
+                        <div class="story-timeline">
+                            <div class="story-step">
+                                <div class="step-header">
+                                    <span class="step-number">0</span>
+                                    <h5>처음 — 행복한 시절</h5>
+                                </div>
+                                <p>
+                                    가문이 모든 기업을 그냥 들고 있음. 
+                                    매년 기업이 버는 이익(약 7,000억 달러)을 100% 누림. 
+                                    모두가 행복하고 화목함.
+                                </p>
                             </div>
-                            <div class="timeline-item">
-                                <span class="timeline-step">2단계</span>
-                                <p><strong>브로커 조력자</strong> 등장 → "친척보다 부자 되세요!" → 수수료 발생</p>
+                            <div class="story-step">
+                                <div class="step-header">
+                                    <span class="step-number">1</span>
+                                    <h5>브로커 등장 — "친척보다 부자 되세요!"</h5>
+                                </div>
+                                <p>
+                                    입심 좋은 중개인들이 가족들에게 접근합니다. 
+                                    "이 주식 팔고 저 주식 사면 다른 친척보다 더 부자 됩니다!" 
+                                    가족들은 서로 주식을 사고팔기 시작하고, 
+                                    <strong>매 거래마다 수수료</strong>를 브로커에게 지급합니다.
+                                </p>
+                                <p class="step-result">→ 가문 전체 수익 약간 감소</p>
                             </div>
-                            <div class="timeline-item">
-                                <span class="timeline-step">3단계</span>
-                                <p><strong>펀드매니저 조력자</strong> 등장 → 전문가에게 맡기세요 → 비용 추가</p>
+                            <div class="story-step">
+                                <div class="step-header">
+                                    <span class="step-number">2</span>
+                                    <h5>펀드매니저 등장 — "전문가에게 맡기세요!"</h5>
+                                </div>
+                                <p>
+                                    혼자 하기 어려우니 전문가를 고용합니다. 
+                                    펀드매니저는 높은 운용 보수를 받고, 
+                                    거래도 더 자주 합니다(브로커 수수료도 더 많이 발생).
+                                </p>
+                                <p class="step-result">→ 가문 전체 수익 더 감소</p>
                             </div>
-                            <div class="timeline-item">
-                                <span class="timeline-step">4단계</span>
-                                <p><strong>컨설턴트 조력자</strong> 등장 → 유능한 펀드매니저를 골라드립니다 → 비용 추가</p>
+                            <div class="story-step">
+                                <div class="step-header">
+                                    <span class="step-number">3</span>
+                                    <h5>컨설턴트 등장 — "좋은 매니저를 골라드립니다!"</h5>
+                                </div>
+                                <p>
+                                    어떤 펀드매니저가 좋은지 모르겠으니 컨설턴트를 고용합니다. 
+                                    (좋은 컨설턴트를 고르는 법은 아무도 알려주지 않습니다.)
+                                </p>
+                                <p class="step-result">→ 비용 한 층 더 추가</p>
                             </div>
-                            <div class="timeline-item">
-                                <span class="timeline-step">5단계</span>
-                                <p><strong>허풍쟁이 조력자</strong>(헤지펀드/사모펀드) 등장 → 성과보수까지 추가 → 비용 폭증</p>
+                            <div class="story-step">
+                                <div class="step-header">
+                                    <span class="step-number">4</span>
+                                    <h5>헤지펀드 등장 — "보수를 더 주면 더 잘 합니다!"</h5>
+                                </div>
+                                <p>
+                                    "돈을 더 주면 더 열심히 합니다"라며 
+                                    높은 고정보수 + 이익의 20% 성과보수를 요구합니다. 
+                                    잘 되면 매니저가 가져가고, 잘못 되면 투자자가 손해를 봅니다.
+                                </p>
+                                <p class="step-result">→ 비용 폭증, 가문은 점점 가난해짐</p>
                             </div>
-                            <div class="timeline-item timeline-result">
-                                <span class="timeline-step">결과</span>
-                                <p>마찰 비용이 미국 기업 이익의 <strong>20% 이상</strong>을 잠식 → 투자자 수익 대폭 감소</p>
+                            <div class="story-step story-step-final">
+                                <div class="step-header">
+                                    <span class="step-number">!</span>
+                                    <h5>최종 결과</h5>
+                                </div>
+                                <p>
+                                    온갖 마찰 비용이 <strong>미국 기업 이익의 20% 이상</strong>을 잡아먹게 됨. 
+                                    투자자들은 가만히 앉아 있었을 때보다 20%나 적게 받게 됨.
+                                </p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 핵심 통찰 -->
-                    <div class="card">
-                        <h3>🔑 핵심 통찰</h3>
-                        <ul class="insight-list">
-                            <li>전체 투자자가 벌 수 있는 최대 이익 = 전체 기업이 벌어들이는 이익</li>
-                            <li>한 투자자가 비싸게 팔면 다른 투자자는 비싸게 사야 한다</li>
-                            <li>"동전 앞면이면 조력자가 보수를 받고, 뒷면이면 투자자가 손실을 본다"</li>
-                        </ul>
+                    <div class="content-block">
+                        <h4>③ 뉴턴의 제4 운동 법칙</h4>
+                        <p>
+                            아이작 뉴턴은 천재 물리학자였지만 투자에서는 크게 실패했습니다. 
+                            남해회사(South Sea Company) 거품에서 막대한 손실을 보고 이렇게 말했죠:
+                        </p>
+                        <div class="quote-box">
+                            <p>"천체의 움직임은 계산할 수 있지만 사람들의 광기는 계산할 수가 없더군요."</p>
+                        </div>
+                        <p>
+                            버핏은 여기서 농담처럼 "제4 운동 법칙"을 제안합니다:
+                        </p>
+                        <div class="key-concept">
+                            <p class="concept-formula">
+                                "투자자 전체로 보면, 운동량이 증가할수록 수익은 감소한다."
+                            </p>
+                            <p class="concept-explain">
+                                많이 거래할수록(운동량↑) → 수수료가 늘어나고(마찰↑) → 수익은 줄어든다(수익↓)
+                            </p>
+                        </div>
                     </div>
 
-                    <!-- 다우지수 퀴즈 -->
-                    <div class="card">
-                        <h3>📈 다우지수 퀴즈</h3>
-                        <p>20세기 동안 다우지수: 65.73 → 11,497.12</p>
-                        <p>연복리 수익률: <strong>단 5.3%</strong></p>
-                        <p>21세기에도 같은 수익률이면 2099년 다우지수 목표: <strong>약 200만</strong></p>
-                        <p class="subtle-text">금세기 들어 6년이 지났지만 다우는 전혀 상승하지 못했다 (2005년 기준)</p>
+                    <div class="content-block">
+                        <h4>④ 다우지수 퀴즈</h4>
+                        <p>20세기 100년간 다우지수:</p>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <span class="stat-number">65.73</span>
+                                <span class="stat-desc">1899년 말</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-number">11,497</span>
+                                <span class="stat-desc">1999년 말</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-number">5.3%</span>
+                                <span class="stat-desc">연복리 수익률</span>
+                            </div>
+                        </div>
+                        <p>
+                            175배나 올랐는데 연 수익률은 고작 5.3%입니다! 
+                            복리의 마법은 시간이 만드는 것이지, 
+                            자주 매매해서 만드는 것이 아닙니다.
+                        </p>
                     </div>
-                </div>
+                </section>
+
+                <section class="explain-section">
+                    <h3 class="section-heading">🎯 쉬운 비유로 이해하기</h3>
+                    
+                    <div class="analogy-box">
+                        <div class="analogy-item">
+                            <span class="analogy-icon">🎂</span>
+                            <div>
+                                <h4>케이크 나눠 먹기</h4>
+                                <p>
+                                    10명이 케이크 하나를 나눠 먹는데, 
+                                    칼로 자르는 사람(브로커)에게 한 조각, 
+                                    접시 가져다주는 사람(펀드매니저)에게 한 조각, 
+                                    어떤 접시가 좋은지 골라주는 사람(컨설턴트)에게 한 조각을 줍니다.
+                                </p>
+                                <p>
+                                    <strong>케이크 크기는 그대로인데 먹는 사람은 점점 늘어납니다.</strong> 
+                                    결국 원래 주인이 먹을 케이크는 줄어들 수밖에 없습니다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="explain-section">
+                    <h3 class="section-heading">✅ 실전 교훈</h3>
+                    <div class="lesson-box">
+                        <div class="lesson-item">
+                            <span class="lesson-num">1</span>
+                            <div>
+                                <h4>거래를 줄여라</h4>
+                                <p>매매할 때마다 수수료·세금이 나간다. "가만히 있는 것"이 최고의 전략일 때가 많다.</p>
+                            </div>
+                        </div>
+                        <div class="lesson-item">
+                            <span class="lesson-num">2</span>
+                            <div>
+                                <h4>중간 비용을 경계하라</h4>
+                                <p>펀드 보수, 판매 수수료, 성과보수 — 이것들이 누적되면 수익의 20% 이상을 잡아먹는다.</p>
+                            </div>
+                        </div>
+                        <div class="lesson-item">
+                            <span class="lesson-num">3</span>
+                            <div>
+                                <h4>"동전 앞면은 내 것, 뒷면은 네 것" 구조를 피하라</h4>
+                                <p>이익이 나면 매니저가 성과보수를 가져가고, 손실이 나면 내가 다 떠안는 구조의 상품은 피하라.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
             </div>
         </article>
 
-        <!-- 2006년 -->
+        <!-- ========== 2006년 ========== -->
         <article class="year-section" id="year-2006">
             <div class="container">
+
                 <div class="year-header">
                     <span class="year-badge">2006</span>
                     <h2 class="year-title">효율적 시장 가설을 배우지 않은 덕분</h2>
-                    <p class="year-theme">월터 슐로스와 후계자 조건</p>
                 </div>
 
-                <div class="content-grid">
-                    <!-- 월터 슐로스 -->
-                    <div class="card card-primary">
-                        <h3>👴 월터 슐로스의 전설</h3>
+                <div class="summary-box">
+                    <p class="summary-label">💡 한줄 요약</p>
+                    <p class="summary-text">
+                        "학교에서 '주가는 항상 옳다'고 배운 사람들 덕분에 가치투자자들은 더 쉽게 돈을 벌었다."
+                    </p>
+                </div>
+
+                <section class="explain-section">
+                    <h3 class="section-heading">🔍 배경: 효율적 시장 가설이 뭔가요?</h3>
+                    
+                    <div class="explain-box">
                         <p>
-                            MBA도 대학 졸업장도 없이 파일 캐비닛 하나로 시작해 
-                            <strong>47년간 S&P500을 훨씬 뛰어넘는 실적</strong>을 기록. 
-                            벤저민 그레이엄에게 배운 단순한 통계 기법으로 "싼 주식을 사려고 노력"했을 뿐이다.
+                            <strong>효율적 시장 가설(EMH)</strong>은 경제학에서 매우 유명한 이론입니다. 
+                            핵심 주장은 이렇습니다:
                         </p>
-                        <div class="stat-box">
-                            <div class="stat">
-                                <span class="stat-value">47년</span>
-                                <span class="stat-label">시장 초과 수익 기간</span>
+                        <div class="key-concept">
+                            <p class="concept-formula">
+                                "모든 정보는 이미 주가에 반영되어 있다. 
+                                따라서 아무리 분석해도 시장을 이기는 것은 불가능하다."
+                            </p>
+                            <p class="concept-explain">
+                                이 이론에 따르면, 좋은 종목을 골라 시장 평균보다 높은 수익을 올리는 것은 
+                                '운'이 좋았을 뿐이며, 지속적으로 시장을 이기는 사람은 존재할 수 없습니다.
+                            </p>
+                        </div>
+                        <p>
+                            이 이론은 수십 년간 대부분의 경영대학원에서 "정설"로 가르쳐졌습니다. 
+                            버핏은 이 이론의 치명적 결함을 <strong>실제 사례</strong>로 보여줍니다.
+                        </p>
+                    </div>
+                </section>
+
+                <section class="explain-section">
+                    <h3 class="section-heading">📖 핵심 내용</h3>
+
+                    <div class="content-block">
+                        <h4>① 월터 슐로스 — 47년간 시장을 이긴 남자</h4>
+                        
+                        <div class="person-card">
+                            <div class="person-info">
+                                <h5>월터 슐로스 (Walter Schloss, 1916–2012)</h5>
+                                <ul>
+                                    <li>대학 졸업장 없음 (MBA는 당연히 없음)</li>
+                                    <li>사무실에 파일 캐비닛 하나(→ 나중에 네 개로 "폭증")</li>
+                                    <li>비서·사무원·경리 없음. 유일한 동료 = 아들 에드윈</li>
+                                    <li>내부 정보 사용 안 함. 복잡한 알고리즘 없음</li>
+                                    <li>투자 기법: <strong>"싼 주식을 사려고 노력합니다"</strong></li>
+                                </ul>
                             </div>
-                            <div class="stat">
-                                <span class="stat-value">~1,000개</span>
-                                <span class="stat-label">투자 종목 수</span>
+                            <div class="person-result">
+                                <div class="stats-grid">
+                                    <div class="stat-card">
+                                        <span class="stat-number">47년</span>
+                                        <span class="stat-desc">S&P500 초과 수익</span>
+                                    </div>
+                                    <div class="stat-card">
+                                        <span class="stat-number">~1,000개</span>
+                                        <span class="stat-desc">투자 종목 (대박 없이 꾸준히)</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="stat">
-                                <span class="stat-value">4개</span>
-                                <span class="stat-label">파일 캐비닛 (최종)</span>
-                            </div>
+                        </div>
+
+                        <div class="tip-box">
+                            <p class="tip-label">🤔 왜 이게 중요한가요?</p>
+                            <p>
+                                효율적 시장 가설이 맞다면, 47년간 지속적으로 시장을 이기는 것은 
+                                "동전 던지기로 47번 연속 앞면이 나오는 것"만큼 불가능해야 합니다. 
+                                월터 슐로스의 존재 자체가 이 이론을 부정하는 증거입니다.
+                            </p>
                         </div>
                     </div>
 
-                    <!-- 효율적 시장 가설 비판 -->
-                    <div class="card">
-                        <h3>🎓 학계의 눈 감기</h3>
+                    <div class="content-block">
+                        <h4>② 학계의 반응 — "눈을 감았다"</h4>
                         <p>
-                            효율적 시장 가설에 이의를 제기한 강사가 교수로 승진할 가능성은 
-                            <strong>"갈릴레오가 교황으로 선출될 가능성"</strong>만큼이나 희박했다.
+                            이 반증이 나왔을 때 학계는 어떻게 했을까요?
                         </p>
+                        <ul class="simple-list">
+                            <li>월터의 실적을 분석해본 학교: <strong>0개</strong></li>
+                            <li>효율적 시장 가설을 수정한 학교: <strong>0개</strong></li>
+                            <li>효율적 시장 가설에 이의를 제기한 강사가 교수로 승진할 확률: <strong>"갈릴레오가 교황이 될 확률"</strong></li>
+                        </ul>
+                        <div class="quote-box">
+                            <p>"모든 학교에서 지구가 평평하다고 가르친다면 해운업자는 사업이 한결 수월해질 것입니다."</p>
+                        </div>
                         <p>
-                            학생들은 "주가는 항상 올바르며 가치 평가는 소용없다"고 배웠고, 
-                            월터 같은 투자자들은 그 덕분에 한결 쉽게 돈을 벌었다.
-                        </p>
-                        <p class="highlight-text">
-                            "모든 학교에서 지구가 평평하다고 가르친다면 해운업자는 사업이 한결 수월해질 것입니다."
+                            즉, 경쟁자들이 "가치 평가는 소용없다"고 믿고 포기하면, 
+                            실제로 가치를 분석하는 사람에게는 기회가 더 많아집니다.
                         </p>
                     </div>
 
-                    <!-- 후계자 조건 -->
-                    <div class="card card-wide">
-                        <h3>🔍 버크셔 후계 투자책임자의 조건</h3>
-                        <div class="requirements-grid">
-                            <div class="req-item">
+                    <div class="content-block">
+                        <h4>③ 버크셔 후계 투자책임자의 조건</h4>
+                        <p>
+                            2006년, 버핏은 자신의 뒤를 이을 투자책임자(CIO)를 찾기 시작합니다. 
+                            단순히 "실적 좋은 사람"이 아니라, 네 가지 자질을 갖춘 사람을 원했습니다:
+                        </p>
+                        <div class="requirements-list">
+                            <div class="req-card">
                                 <span class="req-icon">🧬</span>
-                                <h4>위험 감지 본능</h4>
-                                <p>"유례없는 위험"까지 인지해서 피하는 유전적 감각. 금융 모형으로는 감지할 수 없는 위험을 알아채는 능력.</p>
+                                <h5>위험 감지 본능</h5>
+                                <p>
+                                    금융 모형이 "안전하다"고 말해도 직감적으로 위험을 느끼는 능력. 
+                                    2008년 금융위기 때 대부분의 모형은 "문제없다"고 했습니다.
+                                </p>
                             </div>
-                            <div class="req-item">
+                            <div class="req-card">
                                 <span class="req-icon">🧠</span>
-                                <h4>기질과 독립성</h4>
-                                <p>독립적 사고, 안정된 심리, 인간·기관의 행태를 예리하게 이해하는 능력. 단순히 똑똑한 것만으로는 부족.</p>
+                                <h5>독립적 기질</h5>
+                                <p>
+                                    남들이 다 "사라!"고 외칠 때 혼자 "아니"라고 말할 수 있는 심리적 안정감. 
+                                    IQ가 아무리 높아도 군중을 따라가면 소용없습니다.
+                                </p>
                             </div>
-                            <div class="req-item">
+                            <div class="req-card">
                                 <span class="req-icon">❤️</span>
-                                <h4>충성심과 사명감</h4>
-                                <p>다른 곳에서 훨씬 많은 보수를 제안해도 버크셔에 남을 수 있는 사람. 돈이 유일한 목표가 아닌 사람.</p>
+                                <h5>충성심과 사명감</h5>
+                                <p>
+                                    다른 회사에서 10배의 보수를 제안해도 떠나지 않을 사람. 
+                                    돈보다 일 자체를 사랑하는 사람.
+                                </p>
                             </div>
-                            <div class="req-item">
+                            <div class="req-card">
                                 <span class="req-icon">📈</span>
-                                <h4>검증된 실적</h4>
-                                <p>대규모 포트폴리오 운용 능력을 갖추고, 장기간 시장을 초과하는 실적을 올린 경험.</p>
+                                <h5>장기 검증된 실적</h5>
+                                <p>
+                                    1~2년이 아니라 10년 이상 시장을 초과한 실적. 
+                                    큰 실수 없이 꾸준히 성과를 낸 기록.
+                                </p>
                             </div>
                         </div>
                     </div>
-                </div>
+                </section>
+
+                <section class="explain-section">
+                    <h3 class="section-heading">🎯 쉬운 비유로 이해하기</h3>
+                    
+                    <div class="analogy-box">
+                        <div class="analogy-item">
+                            <span class="analogy-icon">🎣</span>
+                            <div>
+                                <h4>물고기가 없다고 가르치는 낚시 학교</h4>
+                                <p>
+                                    어떤 낚시 학교에서 "이 호수에는 물고기가 없으니 낚시를 해도 소용없다"고 가르칩니다. 
+                                    졸업생들은 낚시를 포기합니다.
+                                </p>
+                                <p>
+                                    하지만 그 학교에 다니지 않은 한 할아버지는 매일 호수에 나가서 
+                                    47년간 꾸준히 물고기를 잡아왔습니다. 
+                                    게다가 경쟁자가 줄어들어서 더 쉬웠습니다.
+                                </p>
+                                <p>
+                                    <strong>월터 슐로스가 바로 그 할아버지입니다.</strong>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="explain-section">
+                    <h3 class="section-heading">✅ 실전 교훈</h3>
+                    <div class="lesson-box">
+                        <div class="lesson-item">
+                            <span class="lesson-num">1</span>
+                            <div>
+                                <h4>단순함이 이긴다</h4>
+                                <p>"싼 주식을 사려고 노력합니다" — 이 한 문장이 47년간 시장을 이긴 전략의 전부였다.</p>
+                            </div>
+                        </div>
+                        <div class="lesson-item">
+                            <span class="lesson-num">2</span>
+                            <div>
+                                <h4>"불가능하다"는 말을 의심하라</h4>
+                                <p>권위 있는 이론이라도 현실의 반증 앞에서는 무력하다. 남들이 포기한 곳에 기회가 있다.</p>
+                            </div>
+                        </div>
+                        <div class="lesson-item">
+                            <span class="lesson-num">3</span>
+                            <div>
+                                <h4>기질 > 지능</h4>
+                                <p>투자 성공에는 IQ보다 독립적 사고, 감정 조절, 인내심이 더 중요하다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
             </div>
         </article>
 
-        <!-- 2010년 -->
+        <!-- ========== 2010년 ========== -->
         <article class="year-section" id="year-2010">
             <div class="container">
+
                 <div class="year-header">
                     <span class="year-badge">2010</span>
                     <h2 class="year-title">사명감 투철한 펀드매니저를 위해</h2>
-                    <p class="year-theme">토드 콤즈 영입과 보상 설계</p>
                 </div>
 
-                <div class="content-grid">
-                    <!-- 토드 콤즈 -->
-                    <div class="card card-primary">
-                        <h3>🌟 토드 콤즈 영입</h3>
+                <div class="summary-box">
+                    <p class="summary-label">💡 한줄 요약</p>
+                    <p class="summary-text">
+                        "좋은 투자자를 찾는 핵심은 과거 실적이 아니라 '위험 감지 능력'과 '사명감'이다."
+                    </p>
+                </div>
+
+                <section class="explain-section">
+                    <h3 class="section-heading">🔍 배경: 왜 후계자가 필요했나?</h3>
+                    
+                    <div class="explain-box">
                         <p>
-                            찰리 멍거와 만나본 결과, 토드 콤즈가 모든 요건에 부합하는 인재임을 확인. 
-                            처음 10~30억 달러 규모로 시작해 해마다 운용 규모를 재조정하기로 결정.
+                            2010년, 버핏은 80세였습니다. 버크셔의 CEO 후보는 여럿 있었지만, 
+                            <strong>투자 포트폴리오를 직접 운용할 사람</strong>은 아직 찾지 못한 상태였습니다.
                         </p>
-                        <p class="highlight-text">
-                            "우리 목표는 중후한 거물이 아니라 신인 유망주를 발굴하는 것이었습니다."
+                        <p>
+                            기존에 후계자로 점찍었던 루 심프슨(Lou Simpson)은 버핏보다 겨우 6살 어렸기 때문에 
+                            장기 해법이 될 수 없었습니다. 젊고, 능력 있으며, 
+                            버크셔에 <strong>오래 남을 사명감</strong>을 가진 사람이 필요했습니다.
                         </p>
                     </div>
+                </section>
 
-                    <!-- 스타일박스 -->
-                    <div class="card">
-                        <h3>📦 버크셔의 유일한 스타일박스</h3>
+                <section class="explain-section">
+                    <h3 class="section-heading">📖 핵심 내용</h3>
+
+                    <div class="content-block">
+                        <h4>① 토드 콤즈 영입</h4>
                         <p>
-                            펀드 상담사들은 '롱숏', '매크로', '국제 주식' 같은 스타일박스를 즐겨 사용하지만, 
-                            버크셔가 사용하는 유일한 스타일박스는:
+                            많은 언론이 "왜 유명한 사람을 안 뽑았나?"라고 물었습니다. 
+                            버핏의 대답:
                         </p>
-                        <div class="style-box">
-                            <span>Smart</span>
-                            <p>현명함</p>
+                        <div class="quote-box">
+                            <p>"우리 목표는 중후한 거물이 아니라 신인 유망주를 발굴하는 것이었습니다."</p>
+                        </div>
+                        <p>
+                            버핏은 과거에도 항상 "무명이지만 실력 있는 사람"을 골랐습니다:
+                        </p>
+                        <ul class="simple-list">
+                            <li>루 심프슨 — 1979년 합류 당시 무명</li>
+                            <li>아지트 제인 — 1985년 합류 당시 무명</li>
+                            <li>찰리 멍거 — 1959년 합류 당시 무명</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-block">
+                        <h4>② 버크셔의 유일한 "스타일박스"</h4>
+                        <p>
+                            펀드 업계에서는 투자 스타일을 분류합니다: 
+                            "롱숏", "매크로", "국제 주식", "가치주", "성장주" 등등. 
+                            버핏은 이런 분류를 일축합니다:
+                        </p>
+                        <div class="key-concept stylebox-concept">
+                            <p class="concept-formula">
+                                버크셔의 유일한 스타일박스: <strong>"현명함(Smart)"</strong>
+                            </p>
+                            <p class="concept-explain">
+                                좋은 투자면 주식이든 채권이든 외환이든 상관없다. 
+                                "이 분류에 맞으니까 사자/팔자"는 어리석은 사고방식이다.
+                            </p>
                         </div>
                     </div>
 
-                    <!-- 보상 설계 -->
-                    <div class="card">
-                        <h3>💼 공정한 보상 설계</h3>
-                        <ul class="insight-list">
-                            <li>S&P 대비 실적을 기준으로 성과급 지급</li>
-                            <li>이연과 손실 이월을 인정 → 급격한 변동에 의한 부당 보상 방지</li>
-                            <li>성과급의 80%는 본인 실적, 20%는 동료 실적 기준 → 협력 촉진</li>
-                        </ul>
+                    <div class="content-block">
+                        <h4>③ 공정한 보상 설계 — 헤지펀드와의 차이</h4>
+                        
+                        <div class="compare-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>항목</th>
+                                        <th>일반 헤지펀드</th>
+                                        <th>버크셔 (토드 콤즈)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>성과 기준</td>
+                                        <td>절대 수익 (아무 기준 없음)</td>
+                                        <td>S&P500 대비 초과 수익</td>
+                                    </tr>
+                                    <tr>
+                                        <td>손실 이월</td>
+                                        <td>없음 (손해 봐도 다음 해 보수 수령)</td>
+                                        <td>있음 (이전 손실 메우기 전까지 보수 없음)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>실패 시</td>
+                                        <td>펀드 닫고 새 펀드 개설</td>
+                                        <td>계속 책임지며 만회해야 함</td>
+                                    </tr>
+                                    <tr>
+                                        <td>협력 인센티브</td>
+                                        <td>없음 (개인 성과만 중시)</td>
+                                        <td>성과보수의 20%는 동료 실적 기준</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="tip-box">
+                            <p class="tip-label">💬 쉽게 말하면</p>
+                            <p>
+                                일반 헤지펀드: "내가 돈 벌면 20% 가져가고, 내가 돈 잃으면 니 돈이니까 니 문제야."<br>
+                                버크셔: "시장보다 못 벌면 보수 없어. 잃으면 먼저 메꿔야 해. 동료도 잘 되어야 내 보수가 올라."
+                            </p>
+                        </div>
                     </div>
 
-                    <!-- 헤지펀드 비판 -->
-                    <div class="card">
-                        <h3>⚠️ 헤지펀드의 부당한 관행</h3>
+                    <div class="content-block">
+                        <h4>④ 버핏의 독설</h4>
+                        <div class="quote-box">
+                            <p>"이런 펀드매니저들에게 돈을 맡기는 사람은 투자자가 아니라 봉(鳳)이라 하겠습니다."</p>
+                        </div>
                         <p>
-                            실적 좋을 때 막대한 보수를 챙기고, 나빠지면 떠나버려 
-                            투자자에게 손실을 떠넘기는 무한책임사원들의 행태를 비판.
-                        </p>
-                        <p class="highlight-text">
-                            "이런 펀드매니저들에게 돈을 맡기는 사람은 투자자가 아니라 봉(鳳)이라 하겠습니다."
+                            이익이 나면 매니저가 성과보수를 챙기고, 
+                            손실이 나면 투자자가 다 떠안는 구조. 
+                            심지어 손실을 내고도 펀드를 닫고 새 펀드를 만들어 
+                            다시 보수를 챙기는 행태까지 비판합니다.
                         </p>
                     </div>
+                </section>
 
-                    <!-- 후계 계획 -->
-                    <div class="card">
-                        <h3>🔮 향후 계획</h3>
-                        <ul class="insight-list">
-                            <li>버핏이 CEO인 동안은 대부분의 자산을 직접 운용</li>
-                            <li>적절한 인재 발견 시 펀드매니저 한두 명 추가 영입 예정</li>
-                            <li>버핏·멍거 은퇴 후에는 펀드매니저들이 전체 포트폴리오 책임</li>
-                            <li>인수 후보 기업 분석 시 펀드매니저들과 상의 권장</li>
-                        </ul>
+                <section class="explain-section">
+                    <h3 class="section-heading">🎯 쉬운 비유로 이해하기</h3>
+                    
+                    <div class="analogy-box">
+                        <div class="analogy-item">
+                            <span class="analogy-icon">⚽</span>
+                            <div>
+                                <h4>축구팀 감독 선발</h4>
+                                <p>
+                                    유명한 감독을 영입하면 연봉이 비쌉니다. 
+                                    지면 "선수 탓"이라고 하고 다른 팀으로 옮겨갑니다.
+                                </p>
+                                <p>
+                                    버핏은 대신 "무명이지만 유소년부터 키운 전술이 있고, 
+                                    이 팀을 진심으로 사랑해서 절대 안 떠날 감독"을 찾았습니다. 
+                                    그리고 <strong>팀이 이겨야만 보너스를 주는 계약</strong>을 맺었습니다.
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </section>
+
+                <section class="explain-section">
+                    <h3 class="section-heading">✅ 실전 교훈</h3>
+                    <div class="lesson-box">
+                        <div class="lesson-item">
+                            <span class="lesson-num">1</span>
+                            <div>
+                                <h4>유명세 ≠ 실력</h4>
+                                <p>투자 세계에서 TV에 나오는 유명인보다 조용히 성과를 내는 무명 투자자가 더 낫다.</p>
+                            </div>
+                        </div>
+                        <div class="lesson-item">
+                            <span class="lesson-num">2</span>
+                            <div>
+                                <h4>보상 구조를 먼저 확인하라</h4>
+                                <p>펀드에 돈을 맡기기 전에 "매니저가 손해 볼 때도 내 돈에서 보수를 가져가나?" 확인하라.</p>
+                            </div>
+                        </div>
+                        <div class="lesson-item">
+                            <span class="lesson-num">3</span>
+                            <div>
+                                <h4>분류에 갇히지 마라</h4>
+                                <p>"나는 가치투자자" "나는 성장주 투자자" — 이런 틀에 갇히면 좋은 기회를 놓친다. 현명하면 된다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
             </div>
         </article>
 
     </main>
 
-    <!-- 핵심 교훈 요약 -->
-    <section class="summary-section">
+    <!-- ==================== 핵심 교훈 종합 ==================== -->
+    <section class="final-lessons" id="lessons">
         <div class="container">
-            <h2 class="section-title">📌 8년간의 핵심 교훈</h2>
-            <div class="lessons-grid">
-                <div class="lesson-card">
-                    <span class="lesson-number">01</span>
+            <h2 class="final-title">📌 8년간의 핵심 교훈 — 한 장으로 정리</h2>
+            <p class="final-subtitle">
+                2003~2010년 주주서한에서 반복적으로 등장하는 버핏의 투자 원칙을 모았습니다.
+            </p>
+
+            <div class="final-grid">
+                <div class="final-card">
+                    <span class="final-num">01</span>
                     <h3>기준을 낮추지 마라</h3>
-                    <p>약간의 추가 수익을 위해 위험을 높이는 것은 유효 기간 지난 치즈를 먹는 것이다.</p>
+                    <p>약간의 추가 수익을 위해 위험을 높이는 것은 유통기한 지난 치즈를 먹는 것이다.</p>
+                    <span class="final-year">2003</span>
                 </div>
-                <div class="lesson-card">
-                    <span class="lesson-number">02</span>
-                    <h3>주식은 소유권이다</h3>
-                    <p>차트 패턴이나 단기 예측이 아닌, 회사 일부에 대한 소유권으로 보라.</p>
+                <div class="final-card">
+                    <span class="final-num">02</span>
+                    <h3>주식 = 소유권</h3>
+                    <p>차트의 선이 아니라 회사의 일부를 사는 것이다. 집을 사듯 투자하라.</p>
+                    <span class="final-year">2004</span>
                 </div>
-                <div class="lesson-card">
-                    <span class="lesson-number">03</span>
+                <div class="final-card">
+                    <span class="final-num">03</span>
                     <h3>움직임을 줄여라</h3>
-                    <p>투자자 전체로 보면 운동량이 증가할수록 수익은 감소한다 — 뉴턴의 제4법칙.</p>
+                    <p>많이 거래할수록 마찰 비용이 쌓여 수익이 줄어든다. 가만히 있는 게 이기는 전략이다.</p>
+                    <span class="final-year">2005</span>
                 </div>
-                <div class="lesson-card">
-                    <span class="lesson-number">04</span>
-                    <h3>단순함을 유지하라</h3>
-                    <p>월터 슐로스는 "싼 주식을 사려고 노력합니다" 하나로 47년간 시장을 이겼다.</p>
+                <div class="final-card">
+                    <span class="final-num">04</span>
+                    <h3>단순함이 이긴다</h3>
+                    <p>"싼 주식을 사려고 노력합니다" 한 줄이 47년간 시장을 이긴 전략이다.</p>
+                    <span class="final-year">2006</span>
                 </div>
-                <div class="lesson-card">
-                    <span class="lesson-number">05</span>
-                    <h3>기질이 지능을 이긴다</h3>
-                    <p>독립적 사고, 안정된 심리, 인간 행태에 대한 이해가 IQ보다 중요하다.</p>
+                <div class="final-card">
+                    <span class="final-num">05</span>
+                    <h3>기질 > 지능</h3>
+                    <p>독립적 사고와 감정 조절이 IQ보다 중요하다. 군중을 따르면 평균이 된다.</p>
+                    <span class="final-year">2006</span>
                 </div>
-                <div class="lesson-card">
-                    <span class="lesson-number">06</span>
-                    <h3>조력자를 경계하라</h3>
-                    <p>브로커, 펀드매니저, 컨설턴트, 헤지펀드 — 마찰 비용이 수익을 갉아먹는다.</p>
+                <div class="final-card">
+                    <span class="final-num">06</span>
+                    <h3>비용 구조를 의심하라</h3>
+                    <p>이익은 매니저가, 손실은 내가 떠안는 구조의 금융상품은 피하라.</p>
+                    <span class="final-year">2010</span>
                 </div>
             </div>
         </div>
@@ -464,12 +1157,16 @@
     <!-- 푸터 -->
     <footer class="site-footer">
         <div class="container">
-            <p>
+            <p class="footer-main">
                 본 사이트는 워렌 버핏의 버크셔 해서웨이 주주서한(2003–2010)을 
                 한국어로 정리·요약한 교육 목적의 자료입니다.
             </p>
+            <p class="footer-source">
+                원문 출처: Berkshire Hathaway Inc. Annual Shareholder Letters<br>
+                정리 기준: 핵심 비유와 투자 철학 중심으로 재구성
+            </p>
             <p class="footer-note">
-                원문 출처: Berkshire Hathaway Inc. Annual Shareholder Letters
+                투자는 개인의 판단과 책임 하에 이루어져야 합니다. 이 사이트는 투자 권유가 아닙니다.
             </p>
         </div>
     </footer>

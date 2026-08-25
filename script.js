@@ -7,12 +7,8 @@ function setTheme(theme) {
     localStorage.setItem('buffett-theme', theme);
 }
 
-function getStoredTheme() {
-    return localStorage.getItem('buffett-theme');
-}
-
 // Initialize theme
-const storedTheme = getStoredTheme();
+const storedTheme = localStorage.getItem('buffett-theme');
 if (storedTheme) {
     setTheme(storedTheme);
 } else if (prefersDark.matches) {
@@ -24,147 +20,14 @@ themeToggle.addEventListener('click', () => {
     setTheme(current === 'dark' ? 'light' : 'dark');
 });
 
-// Listen for system theme changes
 prefersDark.addEventListener('change', (e) => {
-    if (!getStoredTheme()) {
+    if (!localStorage.getItem('buffett-theme')) {
         setTheme(e.matches ? 'dark' : 'light');
     }
 });
 
-// ===== Active Navigation on Scroll =====
-const navLinks = document.querySelectorAll('.nav-link');
-const yearSections = document.querySelectorAll('.year-section');
-
-function updateActiveNav() {
-    const scrollPos = window.scrollY + 160;
-
-    let currentSection = null;
-
-    yearSections.forEach((section) => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.offsetHeight;
-
-        if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
-            currentSection = section.getAttribute('id');
-        }
-    });
-
-    navLinks.forEach((link) => {
-        link.classList.remove('active');
-        if (link.getAttribute('href') === `#${currentSection}`) {
-            link.classList.add('active');
-        }
-    });
-}
-
-// Throttle scroll handler for performance
-let scrollTicking = false;
-window.addEventListener('scroll', () => {
-    if (!scrollTicking) {
-        window.requestAnimationFrame(() => {
-            updateActiveNav();
-            scrollTicking = false;
-        });
-        scrollTicking = true;
-    }
-});
-
-// ===== Smooth Scroll for Nav Links =====
-navLinks.forEach((link) => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const targetId = link.getAttribute('href').substring(1);
-        const targetEl = document.getElementById(targetId);
-
-        if (targetEl) {
-            targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-            // Update active state immediately
-            navLinks.forEach((l) => l.classList.remove('active'));
-            link.classList.add('active');
-        }
-    });
-});
-
-// ===== Scroll-triggered Animations (Intersection Observer) =====
-const animatedElements = document.querySelectorAll('.card, .lesson-card, .timeline-item');
-
-// Reset initial animation state — let IntersectionObserver handle it
-animatedElements.forEach((el) => {
-    el.style.opacity = '0';
-    el.style.animation = 'none';
-});
-
-const observerOptions = {
-    root: null,
-    rootMargin: '0px 0px -60px 0px',
-    threshold: 0.1,
-};
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-            entry.target.style.animation = '';
-            entry.target.style.opacity = '';
-            observer.unobserve(entry.target);
-        }
-    });
-}, observerOptions);
-
-animatedElements.forEach((el) => observer.observe(el));
-
-// ===== Header Shadow on Scroll =====
-const header = document.querySelector('.site-header');
-
-function updateHeaderShadow() {
-    if (window.scrollY > 10) {
-        header.style.boxShadow = '0 2px 20px rgba(0,0,0,0.08)';
-    } else {
-        header.style.boxShadow = 'none';
-    }
-}
-
-window.addEventListener('scroll', () => {
-    if (!scrollTicking) {
-        window.requestAnimationFrame(() => {
-            updateHeaderShadow();
-        });
-    }
-});
-
-// Initial call
-updateHeaderShadow();
-
-// ===== Keyboard Navigation =====
-document.addEventListener('keydown', (e) => {
-    // Press 'D' to toggle dark mode
-    if (e.key === 'd' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        const activeEl = document.activeElement;
-        if (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA') return;
-
-        const current = document.documentElement.getAttribute('data-theme');
-        setTheme(current === 'dark' ? 'light' : 'dark');
-    }
-});
-
-// ===== Back to Top (via header click) =====
-document.querySelector('.site-title').addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-});
-
-// ===== Progress Indicator (reading progress bar) =====
-const progressBar = document.createElement('div');
-progressBar.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 3px;
-    background: var(--color-accent);
-    z-index: 9999;
-    transition: width 0.1s linear;
-    width: 0%;
-`;
-document.body.prepend(progressBar);
+// ===== Progress Bar =====
+const progressBar = document.getElementById('progressBar');
 
 function updateProgress() {
     const scrollTop = window.scrollY;
@@ -173,12 +36,114 @@ function updateProgress() {
     progressBar.style.width = `${Math.min(progress, 100)}%`;
 }
 
+// ===== Header Shadow =====
+const header = document.getElementById('siteHeader');
+
+function updateHeader() {
+    if (window.scrollY > 10) {
+        header.classList.add('scrolled');
+    } else {
+        header.classList.remove('scrolled');
+    }
+}
+
+// ===== Active Navigation =====
+const navLinks = document.querySelectorAll('.nav-link');
+const tocLinks = document.querySelectorAll('.toc-link');
+const sections = document.querySelectorAll('.year-section, .final-lessons');
+
+function updateActiveNav() {
+    const scrollPos = window.scrollY + 120;
+    let currentId = '';
+
+    sections.forEach((section) => {
+        const top = section.offsetTop;
+        const height = section.offsetHeight;
+        if (scrollPos >= top && scrollPos < top + height) {
+            currentId = section.getAttribute('id');
+        }
+    });
+
+    navLinks.forEach((link) => {
+        link.classList.toggle('active', link.getAttribute('href') === `#${currentId}`);
+    });
+
+    tocLinks.forEach((link) => {
+        link.classList.toggle('active', link.getAttribute('href') === `#${currentId}`);
+    });
+}
+
+// ===== Scroll Event (Throttled) =====
+let ticking = false;
 window.addEventListener('scroll', () => {
-    window.requestAnimationFrame(updateProgress);
+    if (!ticking) {
+        window.requestAnimationFrame(() => {
+            updateProgress();
+            updateHeader();
+            updateActiveNav();
+            ticking = false;
+        });
+        ticking = true;
+    }
 });
 
-// ===== Initial setup on page load =====
+// ===== Smooth Scroll for Nav & TOC links =====
+document.querySelectorAll('.nav-link, .toc-link, .site-title').forEach((link) => {
+    link.addEventListener('click', (e) => {
+        const href = link.getAttribute('href');
+        if (href && href.startsWith('#')) {
+            e.preventDefault();
+            const target = document.getElementById(href.substring(1));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else if (href === '#') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+    });
+});
+
+// ===== Scroll-triggered Animations (Intersection Observer) =====
+const animatedSelectors = [
+    '.summary-box', '.explain-box', '.tip-box', '.quote-box',
+    '.content-block', '.analogy-item', '.lesson-item', '.story-step',
+    '.key-concept', '.person-card', '.final-card', '.stat-card', '.req-card'
+];
+
+const animatedElements = document.querySelectorAll(animatedSelectors.join(', '));
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, index) => {
+        if (entry.isIntersecting) {
+            // Add staggered delay
+            const delay = Math.min(index * 50, 300);
+            setTimeout(() => {
+                entry.target.classList.add('animate-in');
+            }, delay);
+            observer.unobserve(entry.target);
+        }
+    });
+}, {
+    root: null,
+    rootMargin: '0px 0px -40px 0px',
+    threshold: 0.1,
+});
+
+animatedElements.forEach((el) => observer.observe(el));
+
+// ===== Keyboard Shortcut =====
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'd' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const active = document.activeElement;
+        if (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') return;
+        const current = document.documentElement.getAttribute('data-theme');
+        setTheme(current === 'dark' ? 'light' : 'dark');
+    }
+});
+
+// ===== Initial State =====
 document.addEventListener('DOMContentLoaded', () => {
-    updateActiveNav();
     updateProgress();
+    updateHeader();
+    updateActiveNav();
 });
