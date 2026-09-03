@@ -169,6 +169,9 @@
     (post.tags || []).slice(0, 3).forEach((t) => {
       meta.push(el('span', { class: 'badge', text: '#' + t }));
     });
+    if (post.hasOriginal) {
+      meta.push(el('span', { class: 'badge badge-original', text: '원문' }));
+    }
     if (post.pending) {
       meta.push(el('span', { class: 'badge badge-pending', text: '반영 중' }));
     }

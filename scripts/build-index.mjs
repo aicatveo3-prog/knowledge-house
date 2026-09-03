@@ -6,6 +6,7 @@ import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
 const POSTS_DIR = 'posts';
+const ORIGINALS_DIR = 'originals';
 const OUT_DIR = 'data';
 const OUT_FILE = path.join(OUT_DIR, 'posts.json');
 
@@ -117,6 +118,22 @@ async function main() {
       readingTime: readingTime(body),
     });
   }
+
+  // 짝이 되는 원문이 있는지 표시
+  let originalIds = new Set();
+  try {
+    originalIds = new Set(
+      (await readdir(ORIGINALS_DIR))
+        .filter((f) => f.endsWith('.md'))
+        .map((f) => f.replace(/\.md$/, ''))
+    );
+  } catch (e) {
+    /* originals 폴더가 없으면 원문 없음 */
+  }
+
+  posts.forEach((p) => {
+    p.hasOriginal = originalIds.has(p.id);
+  });
 
   posts.sort((a, b) => {
     if (a.date === b.date) return b.id.localeCompare(a.id);

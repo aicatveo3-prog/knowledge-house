@@ -28,6 +28,11 @@
     dirty: false,
     saving: false,
     previewing: false,
+
+    // 원문 편집 모드
+    // 원문은 정리본과 파일명이 같아야 짝이 유지되므로 경로를 고정한다
+    isOriginal: false,
+    fixedPath: null,
   };
 
   // ── 서식 메뉴 항목 ─────────────────────────
@@ -491,8 +496,14 @@
     $saveState.textContent = text;
   }
 
+  /** 임시 저장 열쇠 — 원문과 정리본이 섞이지 않게 구분한다 */
+  function localKey() {
+    if (!state.id) return null;
+    return state.isOriginal ? 'original:' + state.id : state.id;
+  }
+
   const scheduleLocalSave = App.debounce(() => {
-    Store.saveLocalDraft(state.id, collect());
+    Store.saveLocalDraft(localKey(), collect());
     setSaveState('이 기기에 임시 저장됨');
   }, 700);
 
@@ -579,11 +590,18 @@
     const message = `post: ${data.title} ${label}`;
 
     try {
-      // 저장 위치가 바뀌는 경우(새 글, 제목 변경, 초안→발행)에는
-      // 남의 글을 덮어쓰지 않도록 겹치지 않는 이름을 찾는다
-      let desired = `${targetDir}/${targetFilename()}`;
-      if (desired !== state.path) {
-        desired = await uniquePath(targetDir, targetFilename());
+      let desired;
+
+      if (state.fixedPath) {
+        // 원문은 정리본과 파일명이 같아야 하므로 이름을 바꾸지 않는다
+        desired = state.fixedPath;
+      } else {
+        // 저장 위치가 바뀌는 경우(새 글, 제목 변경, 초안→발행)에는
+        // 남의 글을 덮어쓰지 않도록 겹치지 않는 이름을 찾는다
+        desired = `${targetDir}/${targetFilename()}`;
+        if (desired !== state.path) {
+          desired = await uniquePath(targetDir, targetFilename());
+        }
       }
 
       if (state.path && state.path !== desired) {
@@ -604,10 +622,10 @@
       state.path = desired;
       // 번호가 붙었을 수 있으므로 실제 저장된 경로에서 식별자를 뽑는다
       state.id = desired.split('/').pop().replace(/\.md$/, '');
-      state.isDraft = targetDir === cfg.draftsDir;
+      state.isDraft = !state.isOriginal && targetDir === cfg.draftsDir;
       state.dirty = false;
       Store.clearLocalDraft(null);
-      Store.clearLocalDraft(state.id);
+      Store.clearLocalDraft(localKey());
 
       setSaveState(`${label} 완료`);
       return true;
@@ -627,6 +645,19 @@
   }
 
   async function publish() {
+    // 원문은 발행 개념이 없고 그 자리에 저장만 한다
+    if (state.isOriginal) {
+      const ok = await persist(cfg.originalsDir, '원문 저장');
+      if (!ok) return;
+
+      App.toast('원문을 저장했습니다.', 'success');
+      setTimeout(() => {
+        window.location.href =
+          'post.html?id=' + encodeURIComponent(state.id) + '&view=original&fresh=1';
+      }, 800);
+      return;
+    }
+
     const ok = await persist(cfg.postsDir, '발행');
     if (!ok) return;
 
@@ -656,6 +687,86 @@
       autoGrow($body);
       $body.focus();
     }
+  }
+
+  // ── 원문 불러오기 ──────────────────────────
+
+  /**
+   * 원문 편집 준비.
+   * 원문이 이미 있으면 그것을, 없으면 정리본의 제목·날짜를 물려받아 새로 시작합니다.
+   */
+  async function loadOriginal(postId) {
+    if (!Store.hasToken()) {
+      App.toast('원문을 쓰려면 토큰이 필요합니다.', 'error');
+      return;
+    }
+
+    state.isOriginal = true;
+    state.id = postId;
+    state.fixedPath = `${cfg.originalsDir}/${postId}.md`;
+    state.path = null;
+
+    applyOriginalMode();
+    setSaveState('불러오는 중…');
+
+    try {
+      const existing = await GH.readFile(state.fixedPath);
+
+      if (existing) {
+        const { meta, body } = MD.parseFrontmatter(existing.text);
+        fill({
+          title: meta.title || postId,
+          date: meta.date || App.todayISO(),
+          tags: [],
+          status: '',
+          body,
+        });
+        state.path = state.fixedPath;
+        state.sha = existing.sha;
+      } else {
+        // 정리본에서 제목과 날짜를 물려받는다
+        const source = await GH.readFile(`${cfg.postsDir}/${postId}.md`);
+        const meta = source ? MD.parseFrontmatter(source.text).meta : {};
+        fill({
+          title: meta.title || postId,
+          date: meta.date || App.todayISO(),
+          tags: [],
+          status: '',
+          body: '',
+        });
+        state.sha = null;
+        App.toast('원문을 새로 만듭니다. 내용을 붙여넣고 저장하세요.');
+      }
+
+      state.dirty = false;
+      setSaveState('');
+      document.title = `원문 편집 · ${cfg.siteName}`;
+      $body.focus();
+
+      offerLocalRecovery('original:' + postId);
+    } catch (err) {
+      setSaveState('');
+      App.toast(err.message, 'error');
+    }
+  }
+
+  /** 원문 모드일 때 화면 정리 */
+  function applyOriginalMode() {
+    // 원문에는 태그·상태가 필요 없다
+    $tags.classList.add('hidden');
+    $status.classList.add('hidden');
+
+    // 초안 개념이 없으므로 감춘다
+    $btnDraft.classList.add('hidden');
+    $btnPublish.textContent = '원문 저장';
+
+    const back = 'post.html?id=' + encodeURIComponent(state.id);
+    const banner = el('div', { class: 'notice notice-original' }, [
+      el('span', { text: '📄 원문을 편집하고 있습니다.' }),
+      el('span', { class: 'spacer' }),
+      el('a', { class: 'btn btn-sm btn-quiet', href: back, text: '정리본으로' }),
+    ]);
+    $editPane.insertBefore(banner, $editPane.firstChild);
   }
 
   // ── 기존 글 불러오기 ────────────────────────
@@ -890,10 +1001,18 @@
       }
     });
 
-    // 기존 글 수정 or 새 글
+    // 원문 편집 / 기존 글 수정 / 새 글
     const params = new URLSearchParams(location.search);
     const id = params.get('id');
-    if (id) {
+    const kind = params.get('kind');
+
+    if (kind === 'original') {
+      if (!id) {
+        App.toast('원문은 글에서 열어야 합니다.', 'error');
+      } else {
+        loadOriginal(id);
+      }
+    } else if (id) {
       loadExisting(id, params.get('draft') === '1');
     } else {
       const local = Store.getLocalDraft(null);
