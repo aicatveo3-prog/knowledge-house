@@ -364,6 +364,122 @@
     }
   }
 
+  // ── 붙여넣기 ──────────────────────────────
+
+  /**
+   * 커서 위치에 글자를 넣습니다.
+   * execCommand 를 쓰면 Ctrl+Z 되돌리기가 그대로 동작합니다.
+   */
+  function insertAtCaret(text) {
+    $body.focus();
+    let inserted = false;
+    try {
+      inserted = document.execCommand('insertText', false, text);
+    } catch (e) {
+      inserted = false;
+    }
+
+    if (!inserted) {
+      const start = $body.selectionStart;
+      const end = $body.selectionEnd;
+      $body.value = $body.value.slice(0, start) + text + $body.value.slice(end);
+      const pos = start + text.length;
+      $body.setSelectionRange(pos, pos);
+    }
+
+    autoGrow($body);
+    markDirty();
+  }
+
+  function onPaste(e) {
+    const data = e.clipboardData;
+    if (!data) return;
+
+    // 1) 이미지가 있으면 업로드
+    const images = [...(data.files || [])].filter((f) =>
+      f.type.startsWith('image/')
+    );
+    if (images.length) {
+      e.preventDefault();
+      images.forEach(uploadImage);
+      return;
+    }
+
+    const html = data.getData('text/html');
+    const plain = data.getData('text/plain');
+
+    // 2) 서식 있는 글이면 마크다운으로 바꿔 넣기
+    if (html && window.HtmlToMd && HtmlToMd.hasStructure(html)) {
+      let converted = '';
+      try {
+        converted = HtmlToMd.convert(html);
+      } catch (err) {
+        converted = '';
+      }
+
+      if (converted) {
+        e.preventDefault();
+        insertAtCaret(converted);
+        App.toast('서식을 살려서 붙여넣었습니다.', 'success');
+        return;
+      }
+    }
+
+    // 3) 그 외에는 찌꺼기만 정리해서 넣기
+    if (plain) {
+      const cleaned = MD.tidyPaste(plain);
+      if (cleaned !== plain) {
+        e.preventDefault();
+        insertAtCaret(cleaned);
+      }
+      // 달라진 게 없으면 브라우저 기본 동작에 맡긴다
+    }
+  }
+
+  // ── 문서 구조 정리 ─────────────────────────
+
+  /** 본문 전체를 정리 (번호 제목 → 마크다운 제목, 찌꺼기 제거) */
+  function tidyBody() {
+    const before = $body.value;
+    if (!before.trim()) {
+      App.toast('정리할 내용이 없습니다.');
+      return;
+    }
+
+    const cleaned = MD.tidyPaste(before);
+    const { text, changed } = MD.structureHeadings(cleaned);
+
+    if (text === before) {
+      App.toast('이미 잘 정리되어 있습니다.');
+      return;
+    }
+
+    // 전체를 골라 다시 넣어 Ctrl+Z 로 되돌릴 수 있게 한다
+    $body.focus();
+    $body.setSelectionRange(0, before.length);
+    let replaced = false;
+    try {
+      replaced = document.execCommand('insertText', false, text);
+    } catch (e) {
+      replaced = false;
+    }
+    if (!replaced) {
+      $body.value = text;
+    }
+    $body.setSelectionRange(text.length, text.length);
+
+    autoGrow($body);
+    markDirty();
+
+    App.toast(
+      changed
+        ? `소제목 ${changed}개를 제목으로 바꿨습니다. Ctrl+Z 로 되돌릴 수 있습니다.`
+        : '글을 정리했습니다. Ctrl+Z 로 되돌릴 수 있습니다.',
+      'success',
+      5000
+    );
+  }
+
   // ── 상태 표시 ─────────────────────────────
 
   function markDirty() {
@@ -740,16 +856,8 @@
       node.addEventListener('change', markDirty)
     );
 
-    // 이미지 붙여넣기 / 끌어놓기
-    $body.addEventListener('paste', (e) => {
-      const files = [...(e.clipboardData?.files || [])].filter((f) =>
-        f.type.startsWith('image/')
-      );
-      if (files.length) {
-        e.preventDefault();
-        files.forEach(uploadImage);
-      }
-    });
+    // 붙여넣기: 이미지 → 업로드, 서식 있는 글 → 마크다운, 그 외 → 찌꺼기 정리
+    $body.addEventListener('paste', onPaste);
     $body.addEventListener('dragover', (e) => e.preventDefault());
     $body.addEventListener('drop', (e) => {
       const files = [...(e.dataTransfer?.files || [])].filter((f) =>
@@ -765,6 +873,7 @@
     $btnDraft.addEventListener('click', saveDraft);
     $btnPublish.addEventListener('click', publish);
     $btnPreview.addEventListener('click', togglePreview);
+    document.getElementById('btn-tidy').addEventListener('click', tidyBody);
     document
       .getElementById('btn-open-settings')
       .addEventListener('click', App.openSettings);

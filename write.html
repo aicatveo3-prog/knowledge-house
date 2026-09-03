@@ -13,6 +13,14 @@
     <main class="wrap">
       <div class="editor-bar">
         <button class="btn btn-sm" id="btn-preview" type="button">미리보기</button>
+        <button
+          class="btn btn-sm btn-quiet"
+          id="btn-tidy"
+          type="button"
+          title="번호 붙은 소제목을 제목으로 바꾸고 붙여넣기 찌꺼기를 정리합니다"
+        >
+          정리
+        </button>
         <span class="spacer"></span>
         <span class="save-state" id="save-state"></span>
         <button class="btn btn-sm" id="btn-draft" type="button">초안 저장</button>
@@ -65,7 +73,11 @@
         <p class="editor-hint">
           <kbd>/</kbd> 서식 메뉴 &nbsp;·&nbsp;
           <kbd>Ctrl</kbd>+<kbd>S</kbd> 초안 저장 &nbsp;·&nbsp;
-          <kbd>Ctrl</kbd>+<kbd>Enter</kbd> 발행 &nbsp;·&nbsp; 이미지는 붙여넣기(<kbd>Ctrl</kbd>+<kbd>V</kbd>)로 올릴 수 있습니다.
+          <kbd>Ctrl</kbd>+<kbd>Enter</kbd> 발행
+          <br />
+          다른 곳에서 복사한 글은 <strong>제목·굵게·목록·표·가로선이 그대로</strong> 붙습니다.
+          번호 붙은 소제목은 <strong>정리</strong> 버튼으로 제목으로 바꿀 수 있습니다.
+          이미지도 붙여넣기로 올라갑니다.
         </p>
       </div>
 
@@ -78,6 +90,7 @@
     <script src="config.js"></script>
     <script src="js/store.js"></script>
     <script src="js/markdown.js"></script>
+    <script src="js/html2md.js"></script>
     <script src="js/github.js"></script>
     <script src="js/app.js"></script>
     <script src="js/editor.js"></script>
