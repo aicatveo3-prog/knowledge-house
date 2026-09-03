@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>지식의 집</title>
+    <meta name="description" content="읽고 생각한 것을 쌓아두는 곳" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="site-header" data-header></header>
+
+    <main class="wrap">
+      <section class="intro">
+        <h1 id="site-title">지식의 집</h1>
+        <p id="site-tagline"></p>
+      </section>
+
+      <div class="toolbar">
+        <input
+          type="search"
+          class="search"
+          id="search"
+          placeholder="제목이나 내용으로 검색"
+          autocomplete="off"
+        />
+        <button class="btn btn-sm btn-quiet hidden" id="toggle-drafts" type="button">
+          초안 보기
+        </button>
+        <a class="btn btn-sm btn-primary" href="write.html">글쓰기</a>
+      </div>
+
+      <div class="tag-row" id="tag-row"></div>
+
+      <div id="list">
+        <div class="skeleton">
+          <div class="skeleton-bar" style="width: 45%"></div>
+          <div class="skeleton-bar" style="width: 85%"></div>
+        </div>
+        <div class="skeleton">
+          <div class="skeleton-bar" style="width: 35%"></div>
+          <div class="skeleton-bar" style="width: 70%"></div>
+        </div>
+      </div>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/markdown.js"></script>
+    <script src="js/github.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/home.js"></script>
+  </body>
+</html>

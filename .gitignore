@@ -1,0 +1,7 @@
+# 배포할 때 Actions가 생성하므로 커밋하지 않습니다
+data/
+
+# 잡동사니
+.DS_Store
+Thumbs.db
+node_modules/

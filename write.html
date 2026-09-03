@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>새 글 · 지식의 집</title>
+    <meta name="robots" content="noindex" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="site-header" data-header></header>
+
+    <main class="wrap">
+      <div class="editor-bar">
+        <button class="btn btn-sm" id="btn-preview" type="button">미리보기</button>
+        <span class="spacer"></span>
+        <span class="save-state" id="save-state"></span>
+        <button class="btn btn-sm" id="btn-draft" type="button">초안 저장</button>
+        <button class="btn btn-sm btn-primary" id="btn-publish" type="button">
+          발행
+        </button>
+      </div>
+
+      <div id="no-token" class="notice hidden">
+        <span>글을 저장하려면 GitHub 토큰이 필요합니다.</span>
+        <span class="spacer"></span>
+        <button class="btn btn-sm" id="btn-open-settings" type="button">
+          설정 열기
+        </button>
+      </div>
+
+      <div id="edit-pane">
+        <textarea
+          class="title-input"
+          id="title"
+          rows="1"
+          placeholder="제목 없음"
+          spellcheck="false"
+        ></textarea>
+
+        <div class="meta-row">
+          <input class="meta-input" id="date" type="date" />
+          <input
+            class="meta-input tags"
+            id="tags"
+            type="text"
+            placeholder="태그를 쉼표로 구분"
+            autocomplete="off"
+          />
+          <select class="meta-input" id="status">
+            <option value="">상태 없음</option>
+            <option value="씨앗">씨앗 🌱</option>
+            <option value="자라는 중">자라는 중 🌿</option>
+            <option value="완성">완성 🌳</option>
+          </select>
+        </div>
+
+        <textarea
+          class="body-input"
+          id="body"
+          placeholder="여기에 쓰세요.  /  를 누르면 서식 메뉴가 열립니다."
+          spellcheck="false"
+        ></textarea>
+
+        <p class="editor-hint">
+          <kbd>/</kbd> 서식 메뉴 &nbsp;·&nbsp;
+          <kbd>Ctrl</kbd>+<kbd>S</kbd> 초안 저장 &nbsp;·&nbsp;
+          <kbd>Ctrl</kbd>+<kbd>Enter</kbd> 발행 &nbsp;·&nbsp; 이미지는 붙여넣기(<kbd>Ctrl</kbd>+<kbd>V</kbd>)로 올릴 수 있습니다.
+        </p>
+      </div>
+
+      <article id="preview-pane" class="preview-pane hidden">
+        <h1 id="preview-title" class="post-header"></h1>
+        <div class="prose" id="preview-body"></div>
+      </article>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/markdown.js"></script>
+    <script src="js/github.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/editor.js"></script>
+  </body>
+</html>
