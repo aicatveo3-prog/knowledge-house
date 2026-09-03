@@ -286,7 +286,10 @@
       }
     });
 
-    document.addEventListener('kh:auth-changed', () => window.location.reload());
+    // 토큰이 바뀌면 목록을 다시 불러온다 (확인 메시지를 볼 시간을 잠깐 준다)
+    document.addEventListener('kh:auth-changed', () => {
+      setTimeout(() => window.location.reload(), 1300);
+    });
 
     load();
   }
