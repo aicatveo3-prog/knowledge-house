@@ -55,8 +55,8 @@
     out = out.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
     out = out.replace(/~~([^~]+)~~/g, '<del>$1</del>');
 
-    // 줄 끝 두 칸 공백 → 줄바꿈
-    out = out.replace(/ {2}$/gm, '<br>');
+    // 줄 끝 공백은 의미가 없으므로 정리 (줄바꿈은 문단에서 <br> 로 처리)
+    out = out.replace(/[ \t]+$/gm, '');
 
     // 보호해둔 코드 복원
     out = out.replace(/\u0000CODE(\d+)\u0000/g, (_, i) => {
@@ -245,7 +245,9 @@
         i++;
       }
       if (buf.length) {
-        html.push(`<p>${renderInline(buf.join('\n'))}</p>`);
+        // 쓴 대로 보이도록 한 번의 줄바꿈도 그대로 살린다
+        const paragraph = renderInline(buf.join('\n')).replace(/\n/g, '<br>');
+        html.push(`<p>${paragraph}</p>`);
       } else {
         i++;
       }
@@ -344,6 +346,87 @@
     return Math.max(1, Math.round(chars / 500));
   }
 
+  /** 다른 곳에서 복사해온 글의 흔한 찌꺼기를 정리 */
+  function tidyPaste(raw) {
+    return String(raw == null ? '' : raw)
+      .replace(/\r\n?/g, '\n')
+      .replace(/[\u00A0\u2007\u202F]/g, ' ') // 줄바꿈 안 되는 공백
+      .replace(/[\u200B-\u200D\uFEFF]/g, '') // 보이지 않는 문자
+      .replace(/^[ \t]*[•‧▪◦●○]\s+/gm, '- ') // 다른 문서의 글머리표
+      .replace(/^[ \t]*[─━―–—_=]{3,}[ \t]*$/gm, '---') // 여러 모양의 가로선
+      .replace(/^[ \t]*\*{3,}[ \t]*$/gm, '---')
+      .replace(/[ \t]+$/gm, '')
+      .replace(/\n{3,}/g, '\n\n');
+  }
+
+  /** 번호 붙은 줄의 모양: 'main'(1.) / 'sub'(1-1.) / null */
+  function numberShape(line) {
+    if (line === undefined || line === null) return null;
+    const t = String(line).trim();
+    if (/^\d+[-.]\d+\.?\s+\S/.test(t)) return 'sub';
+    if (/^\d+[.)]\s+\S/.test(t)) return 'main';
+    return null;
+  }
+
+  /**
+   * 번호가 붙은 소제목을 마크다운 제목으로 바꿉니다.
+   *   "1. 문제 인식"   → "## 1. 문제 인식"
+   *   "2-1. 자기 대화" → "### 2-1. 자기 대화"
+   *
+   * 위아래에 같은 모양의 번호 줄이 붙어 있으면 진짜 목록으로 보고 건드리지 않습니다.
+   * → { text, changed }
+   */
+  function structureHeadings(input) {
+    const lines = String(input == null ? '' : input)
+      .replace(/\r\n?/g, '\n')
+      .split('\n');
+    const out = [];
+    let changed = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      // 이미 마크다운 문법인 줄은 그대로
+      if (/^\s*(#{1,6}\s|>|```|---|\|)/.test(line)) {
+        out.push(line);
+        continue;
+      }
+
+      const shape = numberShape(line);
+      if (!shape) {
+        out.push(line);
+        continue;
+      }
+
+      const trimmed = line.trim();
+      const match = trimmed.match(/^(\d+[-.]?\d*\.?\)?)\s+(.+)$/);
+      if (!match) {
+        out.push(line);
+        continue;
+      }
+
+      const title = match[2].trim();
+      const prev = lines[i - 1];
+      const next = lines[i + 1];
+
+      // 같은 모양의 번호 줄이 바로 위나 아래에 있으면 목록이다
+      const inList =
+        numberShape(prev) === shape || numberShape(next) === shape;
+
+      const looksLikeHeading =
+        !inList && title.length <= 60 && !/[.,;]$/.test(title);
+
+      if (looksLikeHeading) {
+        out.push((shape === 'sub' ? '### ' : '## ') + match[1] + ' ' + title);
+        changed++;
+      } else {
+        out.push(line);
+      }
+    }
+
+    return { text: out.join('\n'), changed };
+  }
+
   window.MD = {
     render,
     renderInline,
@@ -352,5 +435,7 @@
     buildFrontmatter,
     excerpt,
     readingTime,
+    tidyPaste,
+    structureHeadings,
   };
 })();
