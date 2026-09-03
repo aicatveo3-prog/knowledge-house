@@ -202,59 +202,256 @@
 
   // ── 설정 창 ────────────────────────────────
 
+  /** 현재 연결 상태를 사람이 읽을 수 있게 정리 */
+  function authSummary() {
+    const Store = window.Store;
+    if (!Store.hasToken()) {
+      return { level: 'none', text: '토큰이 등록되지 않았습니다.' };
+    }
+
+    const meta = Store.getTokenMeta();
+    const left = Store.daysUntilExpiry();
+    const where = meta && meta.fullName ? meta.fullName : `${cfg().owner}/${cfg().repo}`;
+
+    if (left !== null && left < 0) {
+      return {
+        level: 'expired',
+        text: `토큰이 만료되었습니다 (${formatDate(
+          String(meta.expiresAt).slice(0, 10)
+        )}). 새로 발급해 등록해 주세요.`,
+      };
+    }
+    if (left !== null && left <= 7) {
+      return {
+        level: 'warn',
+        text: `연결됨: ${where} — 토큰이 ${left}일 뒤 만료됩니다.`,
+      };
+    }
+    if (left !== null) {
+      return {
+        level: 'ok',
+        text: `연결됨: ${where} — 만료까지 ${left}일 (${formatDate(
+          String(meta.expiresAt).slice(0, 10)
+        )})`,
+      };
+    }
+    return { level: 'ok', text: `연결됨: ${where}` };
+  }
+
   function openSettings() {
     const c = cfg();
+    const Store = window.Store;
     const wrap = el('div', { class: 'settings' });
+
+    // ── 현재 상태 ──
+    const summary = authSummary();
+    const statusBox = el('p', {
+      class:
+        'settings-status ' +
+        (summary.level === 'ok'
+          ? 'is-ok'
+          : summary.level === 'none'
+          ? ''
+          : 'is-error'),
+      text: summary.text,
+    });
+    wrap.appendChild(statusBox);
+
+    // ── 저장이 막혀 있으면 먼저 알림 ──
+    const health = Store.probe();
+    if (!health.ok) {
+      wrap.appendChild(
+        el('p', {
+          class: 'settings-status is-error',
+          text: '⚠️ ' + health.reason,
+        })
+      );
+    }
 
     wrap.appendChild(
       el('p', {
         class: 'modal-text',
         html:
-          '글을 저장하려면 이 브라우저에 GitHub 토큰이 필요합니다. ' +
-          '토큰은 <strong>이 기기에만</strong> 저장되고 저장소에 올라가지 않습니다.',
+          '토큰은 <strong>이 브라우저에만</strong> 저장되고 저장소에는 올라가지 않습니다. ' +
+          '한 번 등록하면 계속 유지되며, 매번 입력할 필요가 없습니다.',
       })
     );
 
-    const field = el('div', { class: 'field' }, [
-      el('label', { for: 'token-input', text: 'GitHub 토큰' }),
+    // ── 입력 폼 (비밀번호 관리자가 기억할 수 있게 form 으로) ──
+    const form = el('form', { class: 'settings-form', autocomplete: 'on' });
+
+    // 비밀번호 관리자가 계정을 식별하도록 아이디 칸을 함께 둔다
+    form.appendChild(
       el('input', {
-        id: 'token-input',
-        type: 'password',
-        placeholder: 'github_pat_...',
-        value: window.Store.getToken(),
-        autocomplete: 'off',
-        spellcheck: 'false',
-      }),
-    ]);
-    wrap.appendChild(field);
+        type: 'text',
+        name: 'username',
+        value: `${c.owner}/${c.repo}`,
+        autocomplete: 'username',
+        readonly: '',
+        tabindex: '-1',
+        'aria-hidden': 'true',
+        class: 'visually-hidden',
+      })
+    );
 
-    const status = el('p', { class: 'settings-status' });
-    wrap.appendChild(status);
+    form.appendChild(
+      el('div', { class: 'field' }, [
+        el('label', { for: 'token-input', text: 'GitHub 토큰' }),
+        el('input', {
+          id: 'token-input',
+          name: 'password',
+          type: 'password',
+          placeholder: 'github_pat_...',
+          value: Store.getToken(),
+          autocomplete: 'current-password',
+          spellcheck: 'false',
+        }),
+        el('p', {
+          class: 'field-hint',
+          text: '브라우저가 저장을 제안하면 받아두세요. 나중에 한 번에 다시 채워집니다.',
+        }),
+      ])
+    );
 
-    const guide = el('details', { class: 'guide' }, [
-      el('summary', { text: '토큰 발급 방법 (처음이시면 열어보세요)' }),
-      el('ol', {
-        html: `
-          <li>GitHub → 우측 상단 프로필 → <strong>Settings</strong></li>
-          <li>왼쪽 맨 아래 <strong>Developer settings</strong></li>
-          <li><strong>Personal access tokens</strong> → <strong>Fine-grained tokens</strong></li>
-          <li><strong>Generate new token</strong> 클릭</li>
-          <li>이름은 아무거나 (예: <code>knowledge-house</code>), 만료일은 원하는 대로</li>
-          <li><strong>Repository access</strong> → <em>Only select repositories</em> →
-              <code>${MD.escapeHtml(c.repo || '')}</code> 하나만 선택</li>
-          <li><strong>Permissions</strong> → Repository permissions →
-              <strong>Contents</strong> 를 <em>Read and write</em> 로 변경</li>
-          <li>생성 후 나오는 토큰을 복사해서 위에 붙여넣기</li>
-        `,
-      }),
-      el('p', {
-        class: 'guide-note',
-        html:
-          '⚠️ 공용 컴퓨터에서는 토큰을 저장하지 마세요. ' +
-          '유출이 걱정되면 GitHub 설정에서 언제든 즉시 무효화할 수 있습니다.',
-      }),
-    ]);
-    wrap.appendChild(guide);
+    const result = el('p', { class: 'settings-status' });
+    form.appendChild(result);
+
+    const submitBtn = el('button', {
+      class: 'btn btn-primary',
+      type: 'submit',
+      text: '연결 확인 후 저장',
+    });
+
+    form.appendChild(
+      el('div', { class: 'form-actions' }, [
+        el('button', {
+          class: 'btn',
+          type: 'button',
+          text: '토큰 삭제',
+          onclick: async () => {
+            const ok = await confirmDialog(
+              '이 브라우저에 저장된 토큰을 삭제할까요? 글을 쓰려면 다시 입력해야 합니다.',
+              '삭제'
+            );
+            if (ok) {
+              Store.clearToken();
+              toast('토큰을 삭제했습니다.');
+              document.dispatchEvent(new CustomEvent('kh:auth-changed'));
+              closeModal();
+            }
+          },
+        }),
+        submitBtn,
+      ])
+    );
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const value = document.getElementById('token-input').value.trim();
+
+      if (!value) {
+        result.className = 'settings-status is-error';
+        result.textContent = '토큰을 입력해 주세요.';
+        return;
+      }
+
+      const saved = Store.setToken(value);
+      if (!saved) {
+        result.className = 'settings-status is-error';
+        result.textContent =
+          '토큰을 저장할 수 없습니다. ' + (Store.probe().reason || '브라우저 설정을 확인해 주세요.');
+        return;
+      }
+
+      result.className = 'settings-status';
+      result.innerHTML = '<span class="spinner"></span> 확인 중…';
+      submitBtn.disabled = true;
+
+      try {
+        const info = await GH.verify();
+
+        if (!info.canPush) {
+          result.className = 'settings-status is-error';
+          result.textContent =
+            '읽기는 되지만 쓰기 권한이 없습니다. Contents 권한을 Read and write 로 바꿔주세요.';
+          return;
+        }
+
+        Store.setTokenMeta({
+          fullName: info.fullName,
+          expiresAt: info.expiresAt,
+        });
+
+        // 브라우저가 저장 데이터를 함부로 지우지 않도록 요청
+        const persisted = await Store.requestPersistence();
+
+        const left = Store.daysUntilExpiry();
+        result.className = 'settings-status is-ok';
+        result.textContent =
+          `연결됨: ${info.fullName}` +
+          (left !== null ? ` (만료까지 ${left}일)` : '') +
+          (persisted ? ' · 저장 유지 요청 완료' : '');
+
+        toast('토큰을 저장했습니다. 다음부터는 바로 글을 쓸 수 있습니다.', 'success');
+        document.dispatchEvent(new CustomEvent('kh:auth-changed'));
+        setTimeout(closeModal, 1200);
+      } catch (err) {
+        result.className = 'settings-status is-error';
+        result.textContent = err.message;
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    wrap.appendChild(form);
+
+    // ── 발급 안내 ──
+    wrap.appendChild(
+      el('details', { class: 'guide' }, [
+        el('summary', { text: '토큰 발급 방법 (처음이시면 열어보세요)' }),
+        el('ol', {
+          html: `
+            <li>GitHub → 우측 상단 프로필 → <strong>Settings</strong></li>
+            <li>왼쪽 맨 아래 <strong>Developer settings</strong></li>
+            <li><strong>Personal access tokens</strong> → <strong>Fine-grained tokens</strong></li>
+            <li><strong>Generate new token</strong> 클릭</li>
+            <li>이름은 아무거나 (예: <code>knowledge-house</code>)</li>
+            <li><strong>Expiration</strong> — 자주 갈아끼우기 싫으면
+                <em>1 year</em> 또는 <em>No expiration</em> 으로 길게 잡으세요</li>
+            <li><strong>Repository access</strong> → <em>Only select repositories</em> →
+                <code>${MD.escapeHtml(c.repo || '')}</code> 하나만 선택</li>
+            <li><strong>Permissions</strong> → Repository permissions →
+                <strong>Contents</strong> 를 <em>Read and write</em> 로 변경</li>
+            <li>생성 후 나오는 토큰을 복사해서 위에 붙여넣기</li>
+          `,
+        }),
+        el('p', {
+          class: 'guide-note',
+          html:
+            '⚠️ 공용 컴퓨터에서는 저장하지 마세요. ' +
+            '유출이 걱정되면 GitHub 설정에서 언제든 즉시 무효화할 수 있습니다.',
+        }),
+      ])
+    );
+
+    // ── 토큰이 사라지는 경우 안내 ──
+    wrap.appendChild(
+      el('details', { class: 'guide' }, [
+        el('summary', { text: '토큰이 자꾸 풀린다면' }),
+        el('ul', {
+          html: `
+            <li><strong>사파리 / 아이폰</strong> — 7일 넘게 사이트를 방문하지 않으면
+                브라우저가 저장 데이터를 지웁니다. 홈 화면에 추가해두고 가끔 열어주면 유지됩니다.</li>
+            <li><strong>시크릿 창</strong> — 창을 닫으면 모두 사라집니다. 일반 창을 쓰세요.</li>
+            <li><strong>종료 시 데이터 삭제 설정</strong> — 브라우저 설정에서 이 사이트를
+                예외로 등록해 주세요.</li>
+            <li><strong>토큰 만료</strong> — 위 상태 줄에 만료일이 표시됩니다.
+                만료됐다면 새로 발급해야 합니다.</li>
+            <li><strong>다른 기기 / 다른 브라우저</strong> — 기기마다 따로 등록해야 합니다.</li>
+          `,
+        }),
+      ])
+    );
 
     wrap.appendChild(
       el('p', {
@@ -263,56 +460,7 @@
       })
     );
 
-    const actions = [
-      {
-        label: '토큰 삭제',
-        onClick: async () => {
-          const ok = await confirmDialog(
-            '이 브라우저에 저장된 토큰을 삭제할까요? 글을 쓰려면 다시 입력해야 합니다.',
-            '삭제'
-          );
-          if (ok) {
-            window.Store.clearToken();
-            toast('토큰을 삭제했습니다.');
-            document.dispatchEvent(new CustomEvent('kh:auth-changed'));
-          }
-        },
-      },
-      {
-        label: '연결 확인 후 저장',
-        variant: 'primary',
-        onClick: async () => {
-          const value = document.getElementById('token-input').value.trim();
-          if (!value) {
-            status.className = 'settings-status is-error';
-            status.textContent = '토큰을 입력해 주세요.';
-            return;
-          }
-          window.Store.setToken(value);
-          status.className = 'settings-status';
-          status.textContent = '확인 중…';
-          try {
-            const info = await GH.verify();
-            if (!info.canPush) {
-              status.className = 'settings-status is-error';
-              status.textContent =
-                '읽기는 되지만 쓰기 권한이 없습니다. Contents 권한을 Read and write 로 바꿔주세요.';
-              return;
-            }
-            status.className = 'settings-status is-ok';
-            status.textContent = `연결됨: ${info.fullName}`;
-            toast('토큰을 저장했습니다. 이제 글을 쓸 수 있습니다.', 'success');
-            document.dispatchEvent(new CustomEvent('kh:auth-changed'));
-            setTimeout(closeModal, 900);
-          } catch (err) {
-            status.className = 'settings-status is-error';
-            status.textContent = err.message;
-          }
-        },
-      },
-    ];
-
-    openModal('설정', wrap, actions);
+    openModal('설정', wrap);
   }
 
   // ── 헤더 ──────────────────────────────────
@@ -351,6 +499,7 @@
           el('button', {
             class: 'icon-btn',
             type: 'button',
+            'data-settings-btn': '',
             'aria-label': '설정',
             title: '설정',
             text: '⚙',
@@ -360,6 +509,17 @@
       ])
     );
     updateThemeButton();
+    updateAuthIndicator();
+  }
+
+  /** 설정 버튼에 연결 상태를 표시 (토큰 없음/만료 임박이면 눈에 띄게) */
+  function updateAuthIndicator() {
+    const btn = document.querySelector('[data-settings-btn]');
+    if (!btn) return;
+
+    const summary = authSummary();
+    btn.classList.toggle('is-warn', summary.level !== 'ok');
+    btn.title = summary.level === 'ok' ? `설정 · ${summary.text}` : summary.text;
   }
 
   // ── 초기화 ────────────────────────────────
@@ -367,6 +527,32 @@
   function init(active) {
     applyTheme();
     renderHeader(active);
+
+    const Store = window.Store;
+
+    // 저장이 막혀 있으면 토큰이 유지되지 않으므로 미리 알린다
+    const health = Store.probe();
+    if (!health.ok) {
+      setTimeout(() => toast(health.reason, 'error', 8000), 400);
+    } else if (Store.hasToken()) {
+      // 저장 데이터가 임의로 지워지지 않도록 요청
+      Store.requestPersistence();
+
+      const left = Store.daysUntilExpiry();
+      if (left !== null && left < 0) {
+        setTimeout(
+          () => toast('토큰이 만료되었습니다. 설정에서 새로 등록해 주세요.', 'error', 8000),
+          400
+        );
+      } else if (left !== null && left <= 7) {
+        setTimeout(
+          () => toast(`토큰이 ${left}일 뒤 만료됩니다. 미리 갈아두세요.`, 'info', 6000),
+          400
+        );
+      }
+    }
+
+    document.addEventListener('kh:auth-changed', updateAuthIndicator);
   }
 
   window.App = {
@@ -383,5 +569,7 @@
     confirmDialog,
     openSettings,
     applyTheme,
+    authSummary,
+    updateAuthIndicator,
   };
 })();

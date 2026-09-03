@@ -105,7 +105,33 @@
     if (!res.ok) {
       throw new GitHubError(friendlyMessage(res.status, body), res.status, body);
     }
+
+    // 응답 헤더가 필요한 호출(토큰 만료일 확인 등)을 위해 함께 돌려준다
+    if (options.withHeaders) {
+      return { body, headers: res.headers };
+    }
     return body;
+  }
+
+  /**
+   * 응답 헤더에서 토큰 만료일을 찾습니다.
+   * GitHub 이 노출하지 않는 경우도 있어 없으면 null 을 돌려줍니다.
+   */
+  function readExpiry(headers) {
+    try {
+      const raw =
+        headers && headers.get
+          ? headers.get('github-authentication-token-expiration')
+          : null;
+      if (!raw) return null;
+      // "2027-01-01 00:00:00 UTC" 같은 형식이 오므로 다루기 쉽게 바꾼다
+      const cleaned = raw.trim().replace(' UTC', 'Z').replace(' ', 'T');
+      const parsed = new Date(cleaned);
+      if (Number.isNaN(parsed.getTime())) return null;
+      return parsed.toISOString();
+    } catch (e) {
+      return null;
+    }
   }
 
   const GH = {
@@ -113,10 +139,12 @@
     encodeBase64,
     decodeBase64,
 
-    /** 토큰이 이 저장소에 쓸 수 있는지 확인 */
+    /** 토큰이 이 저장소에 쓸 수 있는지 확인 (+ 만료일 확인) */
     async verify() {
       const c = cfg();
-      const repo = await request(repoPath());
+      const { body: repo, headers } = await request(repoPath(), {
+        withHeaders: true,
+      });
       const perms = repo.permissions || {};
       return {
         ok: !!perms.push,
@@ -125,6 +153,7 @@
         defaultBranch: repo.default_branch,
         canPush: !!perms.push,
         expected: `${c.owner}/${c.repo}`,
+        expiresAt: readExpiry(headers),
       };
     },
 
