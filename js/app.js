@@ -44,6 +44,79 @@
     return `${Math.floor(diff / 86400)}일 전`;
   }
 
+  // ── 입력창 높이 자동 조절 ───────────────────
+
+  const lastLength = new WeakMap();
+
+  /**
+   * 어떻게 크기를 조절할지 결정한다. (계산만 하므로 따로 검증할 수 있다)
+   *
+   *   'grow'    내용이 넘쳤으니 키운다 → 스크롤을 건드리지 않아도 된다
+   *   'measure' 내용이 줄었을 수 있어 다시 재야 한다 → 스크롤을 지켜야 한다
+   *   'none'    할 일 없음
+   */
+  function autoGrowPlan({ prevLength, nextLength, scrollHeight, clientHeight }) {
+    const shrunk = typeof prevLength === 'number' && nextLength < prevLength;
+    if (shrunk) return 'measure';
+    if (scrollHeight > clientHeight) return 'grow';
+    return 'none';
+  }
+
+  /**
+   * textarea 높이를 내용에 맞춘다.
+   *
+   * 높이를 auto 로 두면 문서가 갑자기 짧아지고, 브라우저는 그때 스크롤 위치를
+   * 문서 끝으로 잘라낸다. 높이를 되돌려도 스크롤은 이미 맨 위로 간 상태다.
+   * 그래서 글자를 넣는 경우(대부분)에는 auto 로 접지 않고 바로 키우며,
+   * 지우는 경우에만 다시 재고 스크롤을 원래 자리로 돌려놓는다.
+   */
+  function autoGrow(node, options) {
+    if (!node) return;
+    const opts = options || {};
+
+    const nextLength = node.value ? node.value.length : 0;
+    const prevLength = lastLength.get(node);
+    lastLength.set(node, nextLength);
+
+    // 값을 통째로 바꾼 경우(글 불러오기 등)에는 반드시 다시 재야 한다.
+    // 그러지 않으면 짧은 글을 열었는데 상자가 계속 커다랗게 남는다.
+    const plan = opts.remeasure
+      ? 'measure'
+      : autoGrowPlan({
+          prevLength,
+          nextLength,
+          scrollHeight: node.scrollHeight,
+          clientHeight: node.clientHeight,
+        });
+
+    if (plan === 'none') return;
+
+    if (plan === 'grow') {
+      node.style.height = node.scrollHeight + 'px';
+      return;
+    }
+
+    // plan === 'measure'
+    const keep = window.scrollY;
+    node.style.height = 'auto';
+    const needed = node.scrollHeight;
+    node.style.height = needed + 'px';
+
+    if (window.scrollY !== keep) {
+      const html = document.documentElement;
+      const before = html.style.scrollBehavior;
+      // 부드러운 스크롤이 켜져 있어도 눈에 띄지 않게 즉시 되돌린다
+      html.style.scrollBehavior = 'auto';
+      window.scrollTo(0, keep);
+      html.style.scrollBehavior = before;
+    }
+  }
+
+  /** 값을 프로그램이 통째로 바꿨을 때 — 다시 재서 높이를 맞춘다 */
+  function remeasure(node) {
+    autoGrow(node, { remeasure: true });
+  }
+
   function debounce(fn, wait) {
     let timer;
     return function (...args) {
@@ -571,5 +644,8 @@
     applyTheme,
     authSummary,
     updateAuthIndicator,
+    autoGrow,
+    autoGrowPlan,
+    remeasure,
   };
 })();
