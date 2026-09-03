@@ -30,6 +30,9 @@ jobs:
       - name: 글 목록 색인 만들기
         run: node scripts/build-index.mjs
 
+      - name: 파일 주소에 판번호 붙이기 (브라우저 캐시 방지)
+        run: node scripts/stamp-assets.mjs
+
       - name: Pages 설정
         uses: actions/configure-pages@v5
 

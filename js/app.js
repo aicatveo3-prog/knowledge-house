@@ -45,76 +45,111 @@
   }
 
   // ── 입력창 높이 자동 조절 ───────────────────
+  //
+  // 흔한 방법은 height 를 auto 로 두고 scrollHeight 를 읽는 것이다.
+  // 그런데 textarea 는 height:auto 에서 내용만큼 늘지 않고 기본 높이로 접힌다.
+  // 그 순간 문서가 짧아지고 브라우저는 스크롤 위치를 잘라낸다. 그 뒤 커서를
+  // 다시 보이게 하려고 스크롤이 움직이면서 화면이 위아래로 튄다.
+  //
+  // 그래서 실제 입력창은 절대 접지 않는다. 흐름에서 빠져 있는(position:absolute)
+  // 보이지 않는 쌍둥이 요소에 같은 글을 넣어 높이를 재고, 그 값을 한 번에 준다.
+  // 문서 높이가 중간에 줄어드는 순간이 없으므로 스크롤이 잘릴 일이 없다.
 
-  const lastLength = new WeakMap();
+  const mirrors = new WeakMap();
 
-  /**
-   * 어떻게 크기를 조절할지 결정한다. (계산만 하므로 따로 검증할 수 있다)
-   *
-   *   'grow'    내용이 넘쳤으니 키운다 → 스크롤을 건드리지 않아도 된다
-   *   'measure' 내용이 줄었을 수 있어 다시 재야 한다 → 스크롤을 지켜야 한다
-   *   'none'    할 일 없음
-   */
-  function autoGrowPlan({ prevLength, nextLength, scrollHeight, clientHeight }) {
-    const shrunk = typeof prevLength === 'number' && nextLength < prevLength;
-    if (shrunk) return 'measure';
-    if (scrollHeight > clientHeight) return 'grow';
-    return 'none';
+  // 높이 계산에 영향을 주는 속성만 옮긴다
+  const MIRROR_PROPS = [
+    'fontFamily',
+    'fontSize',
+    'fontWeight',
+    'fontStyle',
+    'fontVariant',
+    'letterSpacing',
+    'lineHeight',
+    'textTransform',
+    'wordSpacing',
+    'textIndent',
+    'overflowWrap',
+    'wordBreak',
+    'tabSize',
+  ];
+
+  function getMirror(node) {
+    let mirror = mirrors.get(node);
+    if (!mirror) {
+      mirror = document.createElement('div');
+      mirror.setAttribute('aria-hidden', 'true');
+      const s = mirror.style;
+      s.position = 'absolute';
+      s.top = '0';
+      s.left = '-99999px'; // 왼쪽 밖은 스크롤 영역을 만들지 않는다
+      s.visibility = 'hidden';
+      s.pointerEvents = 'none';
+      s.margin = '0';
+      s.border = '0';
+      s.padding = '0';
+      s.boxSizing = 'content-box';
+      s.whiteSpace = 'pre-wrap';
+      document.body.appendChild(mirror);
+      mirrors.set(node, mirror);
+    }
+    return mirror;
+  }
+
+  /** 이 내용을 다 담으려면 몇 px 이 필요한지 */
+  function neededHeight(node) {
+    const mirror = getMirror(node);
+    const cs = window.getComputedStyle(node);
+
+    MIRROR_PROPS.forEach((prop) => {
+      mirror.style[prop] = cs[prop];
+    });
+    mirror.style.whiteSpace = 'pre-wrap';
+
+    const num = (v) => parseFloat(v) || 0;
+    const padX = num(cs.paddingLeft) + num(cs.paddingRight);
+    const padY = num(cs.paddingTop) + num(cs.paddingBottom);
+    const borderY = num(cs.borderTopWidth) + num(cs.borderBottomWidth);
+
+    // clientWidth 는 테두리를 뺀 값이므로 안쪽 여백만 덜어낸다
+    mirror.style.width = Math.max(0, node.clientWidth - padX) + 'px';
+
+    // 마지막에 줄바꿈을 더해 새 줄에 커서가 놓일 자리를 남긴다
+    mirror.textContent = (node.value || '') + '\n';
+
+    const content = mirror.scrollHeight;
+    return cs.boxSizing === 'border-box' ? content + padY + borderY : content;
   }
 
   /**
    * textarea 높이를 내용에 맞춘다.
-   *
-   * 높이를 auto 로 두면 문서가 갑자기 짧아지고, 브라우저는 그때 스크롤 위치를
-   * 문서 끝으로 잘라낸다. 높이를 되돌려도 스크롤은 이미 맨 위로 간 상태다.
-   * 그래서 글자를 넣는 경우(대부분)에는 auto 로 접지 않고 바로 키우며,
-   * 지우는 경우에만 다시 재고 스크롤을 원래 자리로 돌려놓는다.
+   * 바뀔 필요가 없으면 style 을 아예 건드리지 않는다.
    */
-  function autoGrow(node, options) {
+  function autoGrow(node) {
     if (!node) return;
-    const opts = options || {};
 
-    const nextLength = node.value ? node.value.length : 0;
-    const prevLength = lastLength.get(node);
-    lastLength.set(node, nextLength);
+    const needed = neededHeight(node);
+    const current = parseFloat(node.style.height);
 
-    // 값을 통째로 바꾼 경우(글 불러오기 등)에는 반드시 다시 재야 한다.
-    // 그러지 않으면 짧은 글을 열었는데 상자가 계속 커다랗게 남는다.
-    const plan = opts.remeasure
-      ? 'measure'
-      : autoGrowPlan({
-          prevLength,
-          nextLength,
-          scrollHeight: node.scrollHeight,
-          clientHeight: node.clientHeight,
-        });
+    // 1px 이내면 그대로 둔다 — 대부분의 타이핑에서 아무것도 하지 않는다
+    if (!Number.isNaN(current) && Math.abs(current - needed) <= 1) return;
 
-    if (plan === 'none') return;
-
-    if (plan === 'grow') {
-      node.style.height = node.scrollHeight + 'px';
-      return;
-    }
-
-    // plan === 'measure'
+    // 줄어드는 경우 문서가 짧아져 스크롤이 잘릴 수 있으니 지켜준다
     const keep = window.scrollY;
-    node.style.height = 'auto';
-    const needed = node.scrollHeight;
     node.style.height = needed + 'px';
 
     if (window.scrollY !== keep) {
       const html = document.documentElement;
       const before = html.style.scrollBehavior;
-      // 부드러운 스크롤이 켜져 있어도 눈에 띄지 않게 즉시 되돌린다
       html.style.scrollBehavior = 'auto';
       window.scrollTo(0, keep);
       html.style.scrollBehavior = before;
     }
   }
 
-  /** 값을 프로그램이 통째로 바꿨을 때 — 다시 재서 높이를 맞춘다 */
+  /** 값을 프로그램이 통째로 바꿨을 때도 같은 계산으로 충분하다 */
   function remeasure(node) {
-    autoGrow(node, { remeasure: true });
+    autoGrow(node);
   }
 
   function debounce(fn, wait) {
@@ -645,7 +680,7 @@
     authSummary,
     updateAuthIndicator,
     autoGrow,
-    autoGrowPlan,
+    neededHeight,
     remeasure,
   };
 })();
