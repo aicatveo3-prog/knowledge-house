@@ -76,11 +76,8 @@
   let triggerPos = -1;
 
   // ── 텍스트 영역 자동 높이 ───────────────────
-
-  function autoGrow(node) {
-    node.style.height = 'auto';
-    node.style.height = node.scrollHeight + 'px';
-  }
+  // 스크롤이 튀지 않게 처리하는 로직은 App.autoGrow 에 있다
+  const autoGrow = (node) => App.autoGrow(node);
 
   // ── 커서 화면 좌표 계산 ─────────────────────
 
@@ -529,8 +526,10 @@
     $tags.value = (data.tags || []).join(', ');
     $status.value = data.status || '';
     $body.value = data.body || '';
-    autoGrow($title);
-    autoGrow($body);
+
+    // 값을 통째로 바꿨으니 높이를 다시 잰다 (짧은 글에서 상자가 남지 않게)
+    App.remeasure($title);
+    App.remeasure($body);
   }
 
   function buildMarkdown() {
