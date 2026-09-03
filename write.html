@@ -17,7 +17,7 @@
   <body>
     <header class="site-header" data-header></header>
 
-    <main class="wrap">
+    <main class="wrap wrap-panel">
       <div class="editor-bar">
         <button class="btn btn-sm" id="btn-preview" type="button">미리보기</button>
         <button
@@ -44,7 +44,7 @@
         </button>
       </div>
 
-      <div id="edit-pane">
+      <div id="edit-pane" class="panel">
         <textarea
           class="title-input"
           id="title"
@@ -88,7 +88,7 @@
         </p>
       </div>
 
-      <article id="preview-pane" class="preview-pane hidden">
+      <article id="preview-pane" class="preview-pane panel hidden">
         <h1 id="preview-title" class="post-header"></h1>
         <div class="prose" id="preview-body"></div>
       </article>

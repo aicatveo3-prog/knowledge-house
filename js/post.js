@@ -162,98 +162,33 @@
       );
     }
     root.appendChild(header);
-
-    // 제목이 여러 개인 긴 글에는 목차를 붙인다
-    const toc = buildToc(prose);
-    if (toc) root.appendChild(toc);
-
     root.appendChild(prose);
     root.appendChild(footer);
 
     addHeadingAnchors(prose);
     startProgress();
-    if (toc) watchHeadings(prose, toc);
   }
 
-  // ── 목차 ──────────────────────────────────
-
-  /** 제목마다 겹치지 않는 id 를 붙이고 목차를 만든다 */
-  function buildToc(prose) {
-    const headings = [...prose.querySelectorAll('h2, h3')];
-    if (headings.length < 3) return null;
-
+  /** 제목에 겹치지 않는 id 를 주고, 마우스를 올리면 나오는 링크를 붙인다 */
+  function addHeadingAnchors(prose) {
     const used = new Set();
-    const list = el('ol');
 
-    headings.forEach((h, i) => {
-      let base = h.id || 'section-' + (i + 1);
+    prose.querySelectorAll('h1, h2, h3, h4').forEach((h, i) => {
+      const base = h.id || 'section-' + (i + 1);
       let unique = base;
       let n = 2;
       while (used.has(unique)) unique = `${base}-${n++}`;
       used.add(unique);
       h.id = unique;
 
-      list.appendChild(
-        el('li', { class: h.tagName === 'H3' ? 'lv3' : 'lv2' }, [
-          el('a', {
-            href: '#' + unique,
-            text: h.textContent.trim(),
-            'data-toc': unique,
-          }),
-        ])
+      h.appendChild(
+        el('a', {
+          class: 'heading-anchor',
+          href: '#' + unique,
+          'aria-label': '이 부분 링크',
+          text: '#',
+        })
       );
-    });
-
-    const box = el('details', { class: 'toc', open: '' }, [
-      el('summary', { text: '목차' }),
-      list,
-    ]);
-    return box;
-  }
-
-  /** 지금 보고 있는 구역을 목차에서 표시 */
-  function watchHeadings(prose, toc) {
-    if (typeof IntersectionObserver === 'undefined') return;
-
-    const links = new Map();
-    toc.querySelectorAll('[data-toc]').forEach((a) => {
-      links.set(a.getAttribute('data-toc'), a);
-    });
-
-    const visible = new Set();
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) visible.add(entry.target.id);
-          else visible.delete(entry.target.id);
-        });
-
-        // 화면에 보이는 것 중 가장 위쪽 제목을 현재로 본다
-        const order = [...links.keys()];
-        const current = order.find((key) => visible.has(key));
-
-        links.forEach((a, key) => {
-          a.classList.toggle('is-current', key === current);
-        });
-      },
-      { rootMargin: '-80px 0px -70% 0px', threshold: 0 }
-    );
-
-    prose.querySelectorAll('h2, h3').forEach((h) => observer.observe(h));
-  }
-
-  /** 제목에 마우스를 올리면 나오는 링크 */
-  function addHeadingAnchors(prose) {
-    prose.querySelectorAll('h1, h2, h3, h4').forEach((h) => {
-      if (!h.id) return;
-      const link = el('a', {
-        class: 'heading-anchor',
-        href: '#' + h.id,
-        'aria-label': '이 부분 링크',
-        text: '#',
-      });
-      h.appendChild(link);
     });
   }
 
