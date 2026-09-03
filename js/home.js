@@ -260,6 +260,11 @@
     const tagline = document.getElementById('site-tagline');
     if (cfg.tagline) tagline.textContent = cfg.tagline;
 
+    // 글에서 태그를 눌러 들어온 경우
+    const params = new URLSearchParams(location.search);
+    const tagParam = params.get('tag');
+    if (tagParam) state.tag = tagParam;
+
     searchNode.addEventListener(
       'input',
       App.debounce((e) => {

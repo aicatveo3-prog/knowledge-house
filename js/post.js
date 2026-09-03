@@ -99,16 +99,15 @@
 
     document.title = `${title} · ${cfg.siteName}`;
 
+    // 날짜 · 읽는 시간 · 상태는 한 줄로, 태그는 아래에 따로
     const metaBits = [];
     if (meta.date) metaBits.push(el('span', { text: App.formatDate(meta.date) }));
-    metaBits.push(el('span', { class: 'dot' }));
+    if (meta.date) metaBits.push(el('span', { class: 'dot' }));
     metaBits.push(el('span', { text: `${MD.readingTime(body)}분 읽기` }));
     if (meta.status) {
-      metaBits.push(el('span', { class: 'badge', text: meta.status }));
+      metaBits.push(el('span', { class: 'dot' }));
+      metaBits.push(el('span', { text: meta.status }));
     }
-    (meta.tags || []).forEach((t) => {
-      metaBits.push(el('span', { class: 'badge', text: '#' + t }));
-    });
     if (isDraft) {
       metaBits.push(el('span', { class: 'badge badge-draft', text: '초안' }));
     }
@@ -117,6 +116,23 @@
       el('h1', { text: title }),
       el('div', { class: 'post-meta' }, metaBits),
     ]);
+
+    const tags = meta.tags || [];
+    if (tags.length) {
+      header.appendChild(
+        el(
+          'div',
+          { class: 'post-tags' },
+          tags.map((t) =>
+            el('a', {
+              class: 'tag-chip',
+              href: 'index.html?tag=' + encodeURIComponent(t),
+              text: t,
+            })
+          )
+        )
+      );
+    }
 
     if (Store.hasToken()) {
       header.appendChild(buildActions(title));
@@ -127,6 +143,12 @@
 
     const footer = el('div', { class: 'post-footer' }, [
       el('a', { class: 'btn btn-sm btn-quiet', href: 'index.html', text: '← 목록' }),
+      el('button', {
+        class: 'btn btn-sm btn-quiet',
+        type: 'button',
+        text: '↑ 맨 위로',
+        onclick: () => window.scrollTo({ top: 0, behavior: 'smooth' }),
+      }),
     ]);
 
     root.innerHTML = '';
@@ -140,8 +162,129 @@
       );
     }
     root.appendChild(header);
+
+    // 제목이 여러 개인 긴 글에는 목차를 붙인다
+    const toc = buildToc(prose);
+    if (toc) root.appendChild(toc);
+
     root.appendChild(prose);
     root.appendChild(footer);
+
+    addHeadingAnchors(prose);
+    startProgress();
+    if (toc) watchHeadings(prose, toc);
+  }
+
+  // ── 목차 ──────────────────────────────────
+
+  /** 제목마다 겹치지 않는 id 를 붙이고 목차를 만든다 */
+  function buildToc(prose) {
+    const headings = [...prose.querySelectorAll('h2, h3')];
+    if (headings.length < 3) return null;
+
+    const used = new Set();
+    const list = el('ol');
+
+    headings.forEach((h, i) => {
+      let base = h.id || 'section-' + (i + 1);
+      let unique = base;
+      let n = 2;
+      while (used.has(unique)) unique = `${base}-${n++}`;
+      used.add(unique);
+      h.id = unique;
+
+      list.appendChild(
+        el('li', { class: h.tagName === 'H3' ? 'lv3' : 'lv2' }, [
+          el('a', {
+            href: '#' + unique,
+            text: h.textContent.trim(),
+            'data-toc': unique,
+          }),
+        ])
+      );
+    });
+
+    const box = el('details', { class: 'toc', open: '' }, [
+      el('summary', { text: '목차' }),
+      list,
+    ]);
+    return box;
+  }
+
+  /** 지금 보고 있는 구역을 목차에서 표시 */
+  function watchHeadings(prose, toc) {
+    if (typeof IntersectionObserver === 'undefined') return;
+
+    const links = new Map();
+    toc.querySelectorAll('[data-toc]').forEach((a) => {
+      links.set(a.getAttribute('data-toc'), a);
+    });
+
+    const visible = new Set();
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) visible.add(entry.target.id);
+          else visible.delete(entry.target.id);
+        });
+
+        // 화면에 보이는 것 중 가장 위쪽 제목을 현재로 본다
+        const order = [...links.keys()];
+        const current = order.find((key) => visible.has(key));
+
+        links.forEach((a, key) => {
+          a.classList.toggle('is-current', key === current);
+        });
+      },
+      { rootMargin: '-80px 0px -70% 0px', threshold: 0 }
+    );
+
+    prose.querySelectorAll('h2, h3').forEach((h) => observer.observe(h));
+  }
+
+  /** 제목에 마우스를 올리면 나오는 링크 */
+  function addHeadingAnchors(prose) {
+    prose.querySelectorAll('h1, h2, h3, h4').forEach((h) => {
+      if (!h.id) return;
+      const link = el('a', {
+        class: 'heading-anchor',
+        href: '#' + h.id,
+        'aria-label': '이 부분 링크',
+        text: '#',
+      });
+      h.appendChild(link);
+    });
+  }
+
+  // ── 읽기 진행 표시 ─────────────────────────
+
+  function startProgress() {
+    let bar = document.querySelector('.progress');
+    if (!bar) {
+      bar = el('div', { class: 'progress' });
+      document.body.appendChild(bar);
+    }
+
+    let queued = false;
+    const update = () => {
+      const height =
+        document.documentElement.scrollHeight - window.innerHeight;
+      const ratio = height > 0 ? window.scrollY / height : 0;
+      bar.style.width = Math.min(100, Math.max(0, ratio * 100)) + '%';
+      queued = false;
+    };
+
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(update);
+      },
+      { passive: true }
+    );
+    update();
   }
 
   function buildActions(title) {
