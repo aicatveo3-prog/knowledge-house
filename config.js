@@ -18,4 +18,8 @@ window.SITE_CONFIG = {
   postsDir: 'posts',
   draftsDir: 'drafts',
   imagesDir: 'assets/images',
+
+  // 글마다 짝이 되는 '원문'이 저장되는 폴더
+  // posts/2026-09-03-챕터1.md  ↔  originals/2026-09-03-챕터1.md
+  originalsDir: 'originals',
 };
