@@ -322,9 +322,15 @@
     return lines.join('\n');
   }
 
-  /** 본문에서 요약 추출 */
+  /** 본문에서 요약 추출 (제목 줄은 건너뛰고 첫 문장부터) */
   function excerpt(body, limit = 140) {
-    const plain = String(body || '')
+    const source = String(body || '');
+
+    // 제목만 남기지 않도록, 제목을 뺀 본문이 비면 원문을 쓴다
+    const withoutHeadings = source.replace(/^#{1,6}[ \t].*$/gm, '');
+    const base = withoutHeadings.trim() ? withoutHeadings : source;
+
+    const plain = base
       .replace(/```[\s\S]*?```/g, ' ')
       .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
       .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')

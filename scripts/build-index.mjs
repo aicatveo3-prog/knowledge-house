@@ -58,9 +58,12 @@ function parseFrontmatter(raw) {
   return { meta, body };
 }
 
-/** 본문에서 요약 뽑기 */
+/** 본문에서 요약 뽑기 (제목 줄은 건너뛰고 첫 문장부터) */
 function excerpt(body, limit = 140) {
-  const plain = body
+  const withoutHeadings = body.replace(/^#{1,6}[ \t].*$/gm, '');
+  const base = withoutHeadings.trim() ? withoutHeadings : body;
+
+  const plain = base
     .replace(/```[\s\S]*?```/g, ' ')
     .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
