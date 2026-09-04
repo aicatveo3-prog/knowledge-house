@@ -47,9 +47,9 @@
    *   body   버튼·목록 같은 화면 요소
    *   tight  코드·표처럼 촘촘해야 하는 곳
    */
-  --leading-prose: 1.65;
-  --leading-body: 1.55;
-  --leading-tight: 1.45;
+  --leading-prose: 1.55;
+  --leading-body: 1.5;
+  --leading-tight: 1.4;
 
   /* 본문 폭 — 한글은 한 줄 35~40자가 읽기 편하다 */
   --measure: 40rem;
@@ -1217,19 +1217,19 @@ main {
 /* 인용 — 박스로 감싸고 왼쪽에 강조선 */
 .prose blockquote {
   position: relative;
-  margin: 1.75rem 0;
-  padding: 1.25rem 1.5rem 1.25rem 1.6rem;
+  margin: 1.25rem 0;
+  padding: 0.7rem 1rem 0.7rem 1.15rem;
   border: 1px solid var(--line-soft);
   border-left: 3px solid var(--accent);
   border-radius: 0 var(--r-md) var(--r-md) 0;
   background: var(--bg-soft);
   color: var(--ink-soft);
-  font-size: 1.05em;
+  font-size: 0.97em;
   line-height: var(--leading-prose);
 }
 
 .prose blockquote p {
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.45rem;
 }
 
 .prose blockquote > *:last-child {
@@ -1239,9 +1239,9 @@ main {
 /* 콜아웃 */
 .prose .callout {
   display: flex;
-  gap: 0.9rem;
-  margin: 1.5rem 0;
-  padding: 1.15rem 1.35rem;
+  gap: 0.7rem;
+  margin: 1.25rem 0;
+  padding: 0.75rem 1rem;
   border-radius: var(--r-lg);
   background: var(--accent-soft);
   color: var(--ink);
@@ -1260,7 +1260,7 @@ main {
 }
 
 .prose .callout p {
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.45rem;
 }
 
 /* 코드 */
@@ -1277,8 +1277,8 @@ main {
 
 .prose pre {
   position: relative;
-  margin: 1.5rem 0;
-  padding: 1.15rem 1.25rem;
+  margin: 1.25rem 0;
+  padding: 0.85rem 1rem;
   border: 1px solid var(--line-soft);
   border-radius: var(--r-md);
   background: var(--bg-soft);
