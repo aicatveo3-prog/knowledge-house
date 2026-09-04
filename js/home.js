@@ -1,27 +1,35 @@
 /**
- * 홈 화면 — 글 목록, 검색, 태그 필터
+ * 홈 — 폴더 카드로 시작해서 폴더 안으로 들어간다
+ *
+ *   index.html                 최상위 폴더 카드
+ *   index.html?folder=책1      책1 폴더 안 (하위 폴더 + 글)
+ *   index.html?tag=독서        태그로 걸러진 글
+ *   검색어를 넣으면 폴더와 상관없이 전체에서 찾는다
  */
 (function () {
   const cfg = window.SITE_CONFIG;
   const el = App.el;
+  const F = window.Folders;
 
   const state = {
     posts: [],
     drafts: [],
+    tree: new Map(),
+    folder: '',
     query: '',
     tag: null,
     showDrafts: false,
-    loading: true,
+    sortMode: null, // 사용자가 고른 정렬 (null 이면 자동)
   };
 
   const listNode = document.getElementById('list');
   const tagNode = document.getElementById('tag-row');
   const searchNode = document.getElementById('search');
   const draftBtn = document.getElementById('toggle-drafts');
+  const crumbNode = document.getElementById('breadcrumb');
 
   // ── 데이터 불러오기 ─────────────────────────
 
-  /** 빌드된 색인 파일 읽기 */
   async function loadIndex() {
     try {
       const res = await fetch(`data/posts.json?t=${Date.now()}`, {
@@ -35,15 +43,12 @@
     }
   }
 
-  /** 저장소를 직접 조회해 색인에 없는 글까지 채우기 */
   async function loadFromApi(dir) {
-    const files = (await GH.listDir(dir)).filter(
+    return (await GH.listDir(dir)).filter(
       (f) => f.type === 'file' && f.name.endsWith('.md')
     );
-    return files;
   }
 
-  /** 파일 하나를 글 객체로 */
   async function fileToPost(file, extra = {}) {
     const found = await GH.readFile(file.path);
     if (!found) return null;
@@ -54,6 +59,7 @@
       path: file.path,
       title: meta.title || id,
       date: meta.date || '',
+      folder: F.normalizePath(meta.folder),
       tags: meta.tags || [],
       status: meta.status || '',
       excerpt: MD.excerpt(body),
@@ -64,20 +70,21 @@
 
   async function load() {
     const indexed = await loadIndex();
-    let posts = indexed || [];
+    let posts = (indexed || []).map((p) => ({
+      ...p,
+      folder: F.normalizePath(p.folder),
+    }));
 
     if (Store.hasToken()) {
       try {
-        // 색인에 아직 없는 새 글 찾기
         const files = await loadFromApi(cfg.postsDir);
         const liveIds = new Set(files.map((f) => f.name.replace(/\.md$/, '')));
 
-        // 저장소에서 삭제된 글은 목록에서 제외
         posts = posts.filter((p) => liveIds.has(p.id));
 
-        const knownIds = new Set(posts.map((p) => p.id));
+        const known = new Set(posts.map((p) => p.id));
         const missing = files
-          .filter((f) => !knownIds.has(f.name.replace(/\.md$/, '')))
+          .filter((f) => !known.has(f.name.replace(/\.md$/, '')))
           .slice(0, 30);
 
         const fetched = await Promise.all(
@@ -85,86 +92,121 @@
         );
         posts = posts.concat(fetched.filter(Boolean));
 
-        // 초안 목록
         const draftFiles = await loadFromApi(cfg.draftsDir);
         const drafts = await Promise.all(
           draftFiles.slice(0, 30).map((f) => fileToPost(f, { draft: true }))
         );
-        state.drafts = drafts.filter(Boolean).sort(byDateDesc);
+        state.drafts = drafts.filter(Boolean);
 
         if (state.drafts.length) {
           draftBtn.classList.remove('hidden');
           draftBtn.textContent = `초안 ${state.drafts.length}개`;
         }
       } catch (err) {
-        if (err.status !== 404) {
-          App.toast(err.message, 'error');
-        }
+        if (err.status !== 404) App.toast(err.message, 'error');
       }
     }
 
-    state.posts = posts.sort(byDateDesc);
-    state.loading = false;
+    state.posts = posts;
+    state.tree = F.buildTree(posts);
     render();
   }
 
-  function byDateDesc(a, b) {
-    const da = a.date || '';
-    const db = b.date || '';
-    if (da === db) return (b.id || '').localeCompare(a.id || '');
-    return db.localeCompare(da);
-  }
+  // ── 화면 조각 ─────────────────────────────
 
-  // ── 그리기 ────────────────────────────────
+  function renderBreadcrumb() {
+    crumbNode.innerHTML = '';
 
-  function visiblePosts() {
-    const source = state.showDrafts ? state.drafts : state.posts;
-    const q = state.query.trim().toLowerCase();
+    if (!state.folder && !state.tag && !state.query) {
+      crumbNode.classList.add('hidden');
+      return;
+    }
+    crumbNode.classList.remove('hidden');
 
-    return source.filter((p) => {
-      if (state.tag && !(p.tags || []).includes(state.tag)) return false;
-      if (!q) return true;
-      const haystack = [p.title, p.excerpt, (p.tags || []).join(' ')]
-        .join(' ')
-        .toLowerCase();
-      return haystack.includes(q);
-    });
-  }
+    crumbNode.appendChild(
+      el('a', { class: 'crumb', href: 'index.html', text: '전체' })
+    );
 
-  function renderTags() {
-    const counts = new Map();
-    state.posts.forEach((p) => {
-      (p.tags || []).forEach((t) => counts.set(t, (counts.get(t) || 0) + 1));
-    });
+    if (state.query) {
+      crumbNode.appendChild(el('span', { class: 'crumb-sep', text: '›' }));
+      crumbNode.appendChild(
+        el('span', { class: 'crumb is-current', text: `'${state.query}' 검색` })
+      );
+      return;
+    }
 
-    tagNode.innerHTML = '';
-    if (!counts.size) return;
+    if (state.tag) {
+      crumbNode.appendChild(el('span', { class: 'crumb-sep', text: '›' }));
+      crumbNode.appendChild(
+        el('span', { class: 'crumb is-current', text: '#' + state.tag })
+      );
+      return;
+    }
 
-    const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
-    sorted.forEach(([tag, count]) => {
-      tagNode.appendChild(
-        el('button', {
-          class: 'tag-chip' + (state.tag === tag ? ' is-active' : ''),
-          type: 'button',
-          text: `${tag} ${count}`,
-          onclick: () => {
-            state.tag = state.tag === tag ? null : tag;
-            render();
-          },
-        })
+    F.breadcrumb(state.folder).forEach((part, i, arr) => {
+      crumbNode.appendChild(el('span', { class: 'crumb-sep', text: '›' }));
+      const last = i === arr.length - 1;
+      crumbNode.appendChild(
+        last
+          ? el('span', { class: 'crumb is-current', text: part.name })
+          : el('a', {
+              class: 'crumb',
+              href: 'index.html?folder=' + encodeURIComponent(part.path),
+              text: part.name,
+            })
       );
     });
   }
 
-  function postRow(post) {
+  function folderCard(node) {
+    const bits = [];
+    if (node.children.length) {
+      bits.push(`폴더 ${node.children.length}개`);
+    }
+    bits.push(`글 ${node.total}편`);
+
+    return el('a', {
+      class: 'folder-card',
+      href: 'index.html?folder=' + encodeURIComponent(node.path),
+    }, [
+      el('span', { class: 'folder-icon', text: '🗂' }),
+      el('span', { class: 'folder-body' }, [
+        el('span', { class: 'folder-name', text: node.name }),
+        el('span', { class: 'folder-meta', text: bits.join(' · ') }),
+      ]),
+      el('span', { class: 'folder-arrow', text: '→' }),
+    ]);
+  }
+
+  function unfiledCard(count) {
+    return el('a', {
+      class: 'folder-card is-unfiled',
+      href: 'index.html?folder=' + encodeURIComponent(F.UNFILED),
+    }, [
+      el('span', { class: 'folder-icon', text: '📄' }),
+      el('span', { class: 'folder-body' }, [
+        el('span', { class: 'folder-name', text: F.UNFILED_LABEL }),
+        el('span', { class: 'folder-meta', text: `글 ${count}편` }),
+      ]),
+      el('span', { class: 'folder-arrow', text: '→' }),
+    ]);
+  }
+
+  function postRow(post, index, showFolder) {
     const meta = [];
+
+    if (typeof index === 'number') {
+      // 연재물은 순서를 앞에 보여준다
+      meta.push(el('span', { class: 'post-index', text: String(index) }));
+    }
     if (post.date) meta.push(el('span', { text: App.formatDate(post.date) }));
     if (post.readingTime) {
       meta.push(el('span', { class: 'dot' }));
       meta.push(el('span', { text: `${post.readingTime}분` }));
     }
-    if (post.status) {
-      meta.push(el('span', { class: 'badge', text: post.status }));
+    if (post.status) meta.push(el('span', { class: 'badge', text: post.status }));
+    if (showFolder && post.folder) {
+      meta.push(el('span', { class: 'badge badge-folder', text: post.folder }));
     }
     (post.tags || []).slice(0, 3).forEach((t) => {
       meta.push(el('span', { class: 'badge', text: '#' + t }));
@@ -193,36 +235,95 @@
     ]);
   }
 
-  function emptyState() {
-    if (state.query || state.tag) {
-      return el('div', { class: 'empty' }, [
-        el('span', { class: 'empty-mark', text: '⌕' }),
-        el('h2', { text: '찾는 글이 없습니다' }),
-        el('p', { text: '다른 검색어나 태그로 찾아보세요.' }),
+  /** 글 목록 + 정렬 바꾸기 */
+  function postSection(posts, options = {}) {
+    const wrap = el('div', { class: 'post-section' });
+    if (!posts.length) return wrap;
+
+    const auto = F.detectSortMode(posts);
+    const mode = state.sortMode || auto;
+    const sorted = F.sortPosts(posts, mode);
+
+    if (options.title || posts.length > 1) {
+      const head = el('div', { class: 'section-head' }, [
+        el('h2', { class: 'section-title', text: options.title || '글' }),
+        el('span', { class: 'spacer' }),
       ]);
+
+      if (posts.length > 1) {
+        head.appendChild(
+          el('button', {
+            class: 'btn btn-sm btn-quiet',
+            type: 'button',
+            text: mode === 'order' ? '순서대로' : '최신순',
+            title: '정렬 바꾸기',
+            onclick: () => {
+              state.sortMode = mode === 'order' ? 'recent' : 'order';
+              render();
+            },
+          })
+        );
+      }
+      wrap.appendChild(head);
     }
 
-    if (state.showDrafts) {
-      return el('div', { class: 'empty' }, [
-        el('span', { class: 'empty-mark', text: '⌸' }),
-        el('h2', { text: '초안이 없습니다' }),
-        el('p', { text: '쓰다 만 글을 초안으로 저장해두면 여기에 모입니다.' }),
-      ]);
-    }
+    const ul = el('ul', { class: 'post-list' });
+    sorted.forEach((p, i) => {
+      ul.appendChild(postRow(p, mode === 'order' ? i + 1 : null, options.showFolder));
+    });
+    wrap.appendChild(ul);
+    return wrap;
+  }
 
+  // ── 태그 줄 ───────────────────────────────
+
+  function renderTags(posts) {
+    tagNode.innerHTML = '';
+
+    // 최상위 화면은 폴더만 보여주므로 태그를 감춘다
+    if (!state.folder && !state.query && !state.tag) return;
+
+    const counts = new Map();
+    posts.forEach((p) => {
+      (p.tags || []).forEach((t) => counts.set(t, (counts.get(t) || 0) + 1));
+    });
+    if (!counts.size) return;
+
+    [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .forEach(([tag, count]) => {
+        tagNode.appendChild(
+          el('button', {
+            class: 'tag-chip' + (state.tag === tag ? ' is-active' : ''),
+            type: 'button',
+            text: `${tag} ${count}`,
+            onclick: () => {
+              state.tag = state.tag === tag ? null : tag;
+              render();
+            },
+          })
+        );
+      });
+  }
+
+  // ── 빈 상태 ───────────────────────────────
+
+  function emptyState(message, hint) {
     const box = el('div', { class: 'empty' }, [
-      el('span', { class: 'empty-mark', text: '⌂' }),
-      el('h2', { text: '아직 글이 없습니다' }),
-      el('p', {
-        text: Store.hasToken()
-          ? '첫 글을 써볼까요?'
-          : '글을 쓰려면 먼저 설정에서 GitHub 토큰을 등록해 주세요.',
-      }),
+      el('span', { class: 'empty-mark', text: '🗂' }),
+      el('h2', { text: message }),
+      el('p', { text: hint }),
     ]);
 
     if (Store.hasToken()) {
       box.appendChild(
-        el('a', { class: 'btn btn-primary', href: 'write.html', text: '첫 글 쓰기' })
+        el('a', {
+          class: 'btn btn-primary',
+          href: state.folder && state.folder !== F.UNFILED
+            ? 'write.html?folder=' + encodeURIComponent(state.folder)
+            : 'write.html',
+          text: '글쓰기',
+        })
       );
     } else {
       box.appendChild(
@@ -237,20 +338,107 @@
     return box;
   }
 
+  // ── 그리기 ────────────────────────────────
+
   function render() {
-    renderTags();
+    renderBreadcrumb();
     listNode.innerHTML = '';
 
-    const items = visiblePosts();
+    const source = state.showDrafts ? state.drafts : state.posts;
 
-    if (!items.length) {
-      listNode.appendChild(emptyState());
+    // 1) 검색 — 폴더와 상관없이 전체에서
+    if (state.query.trim()) {
+      const q = state.query.trim().toLowerCase();
+      const hits = source.filter((p) =>
+        [p.title, p.excerpt, p.folder, (p.tags || []).join(' ')]
+          .join(' ')
+          .toLowerCase()
+          .includes(q)
+      );
+      renderTags(hits);
+
+      if (!hits.length) {
+        listNode.appendChild(
+          emptyState('찾는 글이 없습니다', '다른 검색어로 찾아보세요.')
+        );
+        return;
+      }
+      listNode.appendChild(
+        postSection(hits, { title: `검색 결과 ${hits.length}편`, showFolder: true })
+      );
       return;
     }
 
-    const ul = el('ul', { class: 'post-list' });
-    items.forEach((p) => ul.appendChild(postRow(p)));
-    listNode.appendChild(ul);
+    // 2) 태그로 걸러보기
+    if (state.tag) {
+      const hits = source.filter((p) => (p.tags || []).includes(state.tag));
+      renderTags(source);
+      listNode.appendChild(
+        hits.length
+          ? postSection(hits, { title: `#${state.tag} ${hits.length}편`, showFolder: true })
+          : emptyState('이 태그의 글이 없습니다', '다른 태그를 골라보세요.')
+      );
+      return;
+    }
+
+    // 3) 초안 보기 — 폴더 없이 한 줄로
+    if (state.showDrafts) {
+      renderTags(state.drafts);
+      listNode.appendChild(
+        state.drafts.length
+          ? postSection(state.drafts, { title: '초안', showFolder: true })
+          : emptyState('초안이 없습니다', '쓰다 만 글을 초안으로 저장해두면 모입니다.')
+      );
+      return;
+    }
+
+    // 4) 미분류 폴더
+    if (state.folder === F.UNFILED) {
+      const posts = F.unfiledPosts(state.posts);
+      renderTags(posts);
+      listNode.appendChild(
+        posts.length
+          ? postSection(posts, { title: F.UNFILED_LABEL })
+          : emptyState('비어 있습니다', '폴더를 정하지 않은 글이 여기 모입니다.')
+      );
+      return;
+    }
+
+    // 5) 폴더 보기 (최상위 포함)
+    const children = F.childrenOf(state.tree, state.folder);
+    const here = F.postsIn(state.posts, state.folder);
+    const unfiled = state.folder ? [] : F.unfiledPosts(state.posts);
+
+    renderTags(here);
+
+    if (!children.length && !here.length && !unfiled.length) {
+      listNode.appendChild(
+        state.folder
+          ? emptyState('이 폴더가 비어 있습니다', '이 폴더에 첫 글을 써보세요.')
+          : emptyState(
+              '아직 글이 없습니다',
+              Store.hasToken()
+                ? '글을 쓰면서 폴더 이름을 적으면 폴더가 만들어집니다.'
+                : '글을 쓰려면 먼저 설정에서 토큰을 등록해 주세요.'
+            )
+      );
+      return;
+    }
+
+    // 폴더 카드
+    if (children.length || unfiled.length) {
+      const grid = el('div', { class: 'folder-grid' });
+      children.forEach((node) => grid.appendChild(folderCard(node)));
+      if (unfiled.length) grid.appendChild(unfiledCard(unfiled.length));
+      listNode.appendChild(grid);
+    }
+
+    // 이 폴더에 바로 담긴 글
+    if (here.length) {
+      listNode.appendChild(
+        postSection(here, { title: state.folder ? F.nameOf(state.folder) : '글' })
+      );
+    }
   }
 
   // ── 시작 ──────────────────────────────────
@@ -263,10 +451,14 @@
     const tagline = document.getElementById('site-tagline');
     if (cfg.tagline) tagline.textContent = cfg.tagline;
 
-    // 글에서 태그를 눌러 들어온 경우
     const params = new URLSearchParams(location.search);
-    const tagParam = params.get('tag');
-    if (tagParam) state.tag = tagParam;
+    state.folder = F.normalizePath(params.get('folder') || '');
+    if (params.get('folder') === F.UNFILED) state.folder = F.UNFILED;
+    state.tag = params.get('tag') || null;
+
+    if (state.folder && state.folder !== F.UNFILED) {
+      document.title = `${F.nameOf(state.folder)} · ${cfg.siteName}`;
+    }
 
     searchNode.addEventListener(
       'input',
@@ -280,12 +472,11 @@
       state.showDrafts = !state.showDrafts;
       draftBtn.classList.toggle('btn-quiet', !state.showDrafts);
       draftBtn.textContent = state.showDrafts
-        ? '발행된 글 보기'
+        ? '폴더 보기'
         : `초안 ${state.drafts.length}개`;
       render();
     });
 
-    // Cmd/Ctrl + K → 검색창으로
     document.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
@@ -294,7 +485,6 @@
       }
     });
 
-    // 토큰이 바뀌면 목록을 다시 불러온다 (확인 메시지를 볼 시간을 잠깐 준다)
     document.addEventListener('kh:auth-changed', () => {
       setTimeout(() => window.location.reload(), 1300);
     });

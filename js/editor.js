@@ -8,6 +8,8 @@
   const $title = document.getElementById('title');
   const $body = document.getElementById('body');
   const $date = document.getElementById('date');
+  const $folder = document.getElementById('folder');
+  const $folderOptions = document.getElementById('folder-options');
   const $tags = document.getElementById('tags');
   const $status = document.getElementById('status');
   const $saveState = document.getElementById('save-state');
@@ -511,6 +513,7 @@
       // 제목에 줄바꿈이 들어가면 메타데이터가 깨지므로 한 줄로 정리
       title: $title.value.replace(/\s*\n+\s*/g, ' ').trim(),
       date: $date.value || App.todayISO(),
+      folder: window.Folders.normalizePath($folder.value),
       tags: $tags.value
         .split(',')
         .map((s) => s.trim())
@@ -523,6 +526,7 @@
   function fill(data) {
     $title.value = data.title || '';
     $date.value = data.date || App.todayISO();
+    $folder.value = window.Folders.normalizePath(data.folder);
     $tags.value = (data.tags || []).join(', ');
     $status.value = data.status || '';
     $body.value = data.body || '';
@@ -537,6 +541,7 @@
     const front = MD.buildFrontmatter({
       title: data.title,
       date: data.date,
+      folder: data.folder,
       tags: data.tags,
       status: data.status,
     });
@@ -688,6 +693,31 @@
     }
   }
 
+  // ── 폴더 자동완성 ──────────────────────────
+
+  /** 이미 쓰고 있는 폴더 이름을 후보로 채운다 */
+  async function loadFolderOptions() {
+    let posts = [];
+
+    try {
+      const res = await fetch(`data/posts.json?t=${Date.now()}`, {
+        cache: 'no-store',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        posts = Array.isArray(data.posts) ? data.posts : [];
+      }
+    } catch (e) {
+      /* 색인이 아직 없으면 후보 없이 진행 */
+    }
+
+    const paths = window.Folders.allPaths(posts);
+    $folderOptions.innerHTML = '';
+    paths.forEach((path) => {
+      $folderOptions.appendChild(el('option', { value: path }));
+    });
+  }
+
   // ── 원문 불러오기 ──────────────────────────
 
   /**
@@ -751,7 +781,8 @@
 
   /** 원문 모드일 때 화면 정리 */
   function applyOriginalMode() {
-    // 원문에는 태그·상태가 필요 없다
+    // 원문에는 폴더·태그·상태가 필요 없다 (정리본을 따른다)
+    $folder.classList.add('hidden');
     $tags.classList.add('hidden');
     $status.classList.add('hidden');
 
@@ -791,6 +822,7 @@
       fill({
         title: meta.title || id,
         date: meta.date || App.todayISO(),
+        folder: meta.folder || '',
         tags: meta.tags || [],
         status: meta.status || '',
         body,
@@ -962,9 +994,10 @@
     $body.addEventListener('keydown', onBodyKeydown);
     $body.addEventListener('blur', () => setTimeout(closeMenu, 120));
     $body.addEventListener('scroll', closeMenu);
-    [$tags, $status, $date].forEach((node) =>
+    [$tags, $status, $date, $folder].forEach((node) =>
       node.addEventListener('change', markDirty)
     );
+    $folder.addEventListener('input', markDirty);
 
     // 붙여넣기: 이미지 → 업로드, 서식 있는 글 → 마크다운, 그 외 → 찌꺼기 정리
     $body.addEventListener('paste', onPaste);
@@ -1019,8 +1052,16 @@
         fill(local);
         setSaveState(`이어서 쓰는 중 (${App.timeAgo(local.savedAt)} 저장)`);
       }
+
+      // 폴더 안에서 '글쓰기' 로 들어온 경우 그 폴더를 미리 채워둔다
+      const fromFolder = window.Folders.normalizePath(params.get('folder') || '');
+      if (fromFolder && !$folder.value) $folder.value = fromFolder;
+
       $title.focus();
     }
+
+    // 원문 모드에서는 폴더 칸을 쓰지 않으므로 후보를 채우지 않는다
+    if (kind !== 'original') loadFolderOptions();
 
     autoGrow($title);
     autoGrow($body);

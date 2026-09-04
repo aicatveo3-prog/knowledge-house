@@ -314,6 +314,7 @@
     const lines = ['---'];
     if (meta.title) lines.push(`title: ${meta.title}`);
     if (meta.date) lines.push(`date: ${meta.date}`);
+    if (meta.folder) lines.push(`folder: ${meta.folder}`);
     if (meta.tags && meta.tags.length) {
       lines.push(`tags: [${meta.tags.join(', ')}]`);
     }
