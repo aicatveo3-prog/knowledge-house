@@ -160,10 +160,31 @@
       metaBits.push(el('span', { class: 'badge badge-draft', text: '초안' }));
     }
 
-    const header = el('header', { class: 'post-header' }, [
-      el('h1', { text: title }),
-      el('div', { class: 'post-meta' }, metaBits),
-    ]);
+    const header = el('header', { class: 'post-header' }, []);
+
+    // 이 글이 담긴 폴더 위치
+    const folder = window.Folders
+      ? window.Folders.normalizePath(mainMeta.folder)
+      : '';
+    if (folder) {
+      const crumb = el('nav', { class: 'breadcrumb', 'aria-label': '폴더 위치' }, [
+        el('a', { class: 'crumb', href: 'index.html', text: '전체' }),
+      ]);
+      window.Folders.breadcrumb(folder).forEach((part) => {
+        crumb.appendChild(el('span', { class: 'crumb-sep', text: '›' }));
+        crumb.appendChild(
+          el('a', {
+            class: 'crumb',
+            href: 'index.html?folder=' + encodeURIComponent(part.path),
+            text: part.name,
+          })
+        );
+      });
+      header.appendChild(crumb);
+    }
+
+    header.appendChild(el('h1', { text: title }));
+    header.appendChild(el('div', { class: 'post-meta' }, metaBits));
 
     const tags = mainMeta.tags || [];
     if (tags.length) {

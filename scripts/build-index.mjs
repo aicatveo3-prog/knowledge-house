@@ -85,6 +85,16 @@ function readingTime(body) {
   return Math.max(1, Math.round(chars / 500));
 }
 
+/** 폴더 경로 다듬기 — js/folders.js 의 normalizePath 와 같은 규칙 */
+function normalizeFolder(value) {
+  return String(value == null ? '' : value)
+    .replace(/\\/g, '/')
+    .split('/')
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .join('/');
+}
+
 /** 파일명에서 날짜 추출 (프론트매터에 날짜가 없을 때 대비) */
 function dateFromName(name) {
   const m = name.match(/^(\d{4}-\d{2}-\d{2})/);
@@ -112,6 +122,7 @@ async function main() {
       path: full,
       title: meta.title || id,
       date: meta.date || dateFromName(file),
+      folder: normalizeFolder(meta.folder),
       tags: meta.tags,
       status: meta.status || '',
       excerpt: excerpt(body),
