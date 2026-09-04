@@ -47,9 +47,9 @@
    *   body   버튼·목록 같은 화면 요소
    *   tight  코드·표처럼 촘촘해야 하는 곳
    */
-  --leading-prose: 1.72;
-  --leading-body: 1.62;
-  --leading-tight: 1.5;
+  --leading-prose: 1.65;
+  --leading-body: 1.55;
+  --leading-tight: 1.45;
 
   /* 본문 폭 — 한글은 한 줄 35~40자가 읽기 편하다 */
   --measure: 40rem;
@@ -1082,7 +1082,7 @@ main {
 }
 
 .prose p {
-  margin: 0 0 1.3rem;
+  margin: 0 0 1.1rem;
 }
 
 /* 제목 — 위계를 크기·굵기·여백 세 가지로 함께 준다 */
@@ -1098,24 +1098,24 @@ main {
 }
 
 .prose h1 {
-  margin: 3.75rem 0 1.25rem;
+  margin: 2.75rem 0 0.9rem;
   font-size: 1.6rem;
 }
 
 .prose h2 {
-  margin: 3.75rem 0 1.15rem;
+  margin: 2.5rem 0 0.8rem;
   font-size: 1.4rem;
 }
 
 .prose h3 {
-  margin: 2.75rem 0 0.85rem;
+  margin: 2rem 0 0.65rem;
   font-size: 1.12rem;
   font-weight: 660;
   color: var(--ink);
 }
 
 .prose h4 {
-  margin: 2.25rem 0 0.7rem;
+  margin: 1.75rem 0 0.55rem;
   font-size: 1rem;
   color: var(--ink-soft);
 }
@@ -1169,12 +1169,12 @@ main {
 /* 목록 */
 .prose ul,
 .prose ol {
-  margin: 0 0 1.3rem;
+  margin: 0 0 1.1rem;
   padding-left: 1.3rem;
 }
 
 .prose li {
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.3rem;
   padding-left: 0.15rem;
 }
 
@@ -1217,7 +1217,7 @@ main {
 /* 인용 — 박스로 감싸고 왼쪽에 강조선 */
 .prose blockquote {
   position: relative;
-  margin: 2.25rem 0;
+  margin: 1.75rem 0;
   padding: 1.25rem 1.5rem 1.25rem 1.6rem;
   border: 1px solid var(--line-soft);
   border-left: 3px solid var(--accent);
@@ -1240,7 +1240,7 @@ main {
 .prose .callout {
   display: flex;
   gap: 0.9rem;
-  margin: 2rem 0;
+  margin: 1.5rem 0;
   padding: 1.15rem 1.35rem;
   border-radius: var(--r-lg);
   background: var(--accent-soft);
@@ -1277,7 +1277,7 @@ main {
 
 .prose pre {
   position: relative;
-  margin: 2rem 0;
+  margin: 1.5rem 0;
   padding: 1.15rem 1.25rem;
   border: 1px solid var(--line-soft);
   border-radius: var(--r-md);
@@ -1308,7 +1308,7 @@ main {
 /* 구분선 — 선 대신 점 세 개로 숨을 고른다 */
 .prose hr {
   height: auto;
-  margin: 3.25rem 0;
+  margin: 2.5rem 0;
   border: none;
   text-align: center;
 }
@@ -1323,13 +1323,13 @@ main {
 /* 그림 */
 .prose img {
   display: block;
-  margin: 2rem auto;
+  margin: 1.5rem auto;
   border-radius: var(--r-md);
 }
 
 /* 표 — 테두리 박스 안에, 세로선은 없이 */
 .table-wrap {
-  margin: 2rem 0;
+  margin: 1.5rem 0;
   overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: var(--r-md);

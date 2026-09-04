@@ -98,13 +98,17 @@
       return;
     }
 
-    // 보려는 문서가 아직 없으면 정리본으로 돌린다
-    const wanted = params.get('view') || 'main';
-    if (wanted !== 'main' && Docs.byKey(wanted) && state.docs[wanted]) {
+    // 보려는 문서가 아직 없으면 기본 탭으로 돌린다
+    const wanted = params.get('view') || '';
+    if (wanted && Docs.byKey(wanted) && state.docs[wanted]) {
       state.view = wanted;
+    } else if (!wanted) {
+      // 주소에 view 가 없으면 기본 탭을 자동으로 고른다
+      // 요약본이 있으면 요약본, 아니면 정리본
+      state.view = state.docs.summary ? 'summary' : 'main';
     } else {
       state.view = 'main';
-      if (wanted !== 'main' && Store.hasToken()) {
+      if (wanted && Store.hasToken()) {
         App.toast(
           `${Docs.labelOf(wanted) || '문서'}이 아직 없습니다. 탭에서 추가할 수 있습니다.`
         );
