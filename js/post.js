@@ -285,7 +285,7 @@
     const tabHref = (key) =>
       'post.html?id=' +
       encodeURIComponent(id) +
-      (key === 'main' ? '' : '&view=' + key);
+      '&view=' + key;
 
     Docs.all().forEach((kind) => {
       const has = kind.key === 'main' || !!state.docs[kind.key];
@@ -394,7 +394,7 @@
       setTimeout(() => {
         window.location.href = isMain
           ? 'index.html'
-          : `post.html?id=${encodeURIComponent(id)}`;
+          : `post.html?id=${encodeURIComponent(id)}&view=main`;
       }, 700);
     } catch (err) {
       App.toast(err.message, 'error');
