@@ -1,33 +1,38 @@
 /**
- * 글 보기 — 본문 표시, 원문 전환, 수정/삭제, 변경 기록
+ * 글 보기 — 정리 / 요약본 / 원문 전환, 수정/삭제, 변경 기록
  *
- * 글 하나는 두 개의 문서를 가질 수 있습니다.
- *   posts/<id>.md      정리한 글
+ * 글 하나는 이름이 같은 파일 여러 개를 가질 수 있습니다.
+ *   posts/<id>.md      정리
+ *   summaries/<id>.md  요약본
  *   originals/<id>.md  원문
- * 둘은 파일명이 같아서 짝이 됩니다.
  */
 (function () {
   const cfg = window.SITE_CONFIG;
   const el = App.el;
+  const Docs = window.Docs;
 
   const params = new URLSearchParams(location.search);
   const id = params.get('id') || '';
   const isDraft = params.get('draft') === '1';
   const isFresh = params.get('fresh') === '1';
-  const wantsOriginal = params.get('view') === 'original';
-
-  const mainDir = isDraft ? cfg.draftsDir : cfg.postsDir;
-  const mainPath = `${mainDir}/${id}.md`;
-  const originalPath = `${cfg.originalsDir}/${id}.md`;
 
   const root = document.getElementById('post');
 
-  // 지금 보고 있는 문서
   const state = {
-    main: null, // { text, sha }
-    original: null, // { text, sha } / 없으면 null
-    view: wantsOriginal ? 'original' : 'main',
+    // 종류별 문서 { text, sha } / 없으면 null
+    docs: {},
+    view: 'main',
   };
+
+  // ── 경로 ──────────────────────────────────
+
+  function pathOf(kind) {
+    if (kind === 'main') {
+      const dir = isDraft ? cfg.draftsDir : cfg.postsDir;
+      return `${dir}/${id}.md`;
+    }
+    return Docs.pathFor(kind, id);
+  }
 
   // ── 불러오기 ──────────────────────────────
 
@@ -35,7 +40,6 @@
     return p.split('/').map(encodeURIComponent).join('/');
   }
 
-  /** 배포된 사이트에서 직접 읽기 */
   async function fromSite(path) {
     try {
       const res = await fetch(`${encodePathForFetch(path)}?t=${Date.now()}`, {
@@ -43,7 +47,6 @@
       });
       if (!res.ok) return null;
       const text = await res.text();
-      // 없는 파일이면 404 HTML 이 올 수도 있어 확인
       if (/^\s*<(!doctype|html)/i.test(text)) return null;
       return { text, sha: null };
     } catch (e) {
@@ -51,7 +54,6 @@
     }
   }
 
-  /** GitHub API 로 읽기 (방금 저장한 글, 초안) */
   async function fromApi(path) {
     if (!Store.hasToken()) return null;
     try {
@@ -63,8 +65,8 @@
     }
   }
 
-  /** 갓 저장한 것이면 저장소를 먼저 본다 */
   async function loadDoc(path, apiFirst) {
+    if (!path) return null;
     if (apiFirst) return (await fromApi(path)) || (await fromSite(path));
     return (await fromSite(path)) || (await fromApi(path));
   }
@@ -77,16 +79,17 @@
 
     const apiFirst = isFresh || isDraft;
 
-    const [main, original] = await Promise.all([
-      loadDoc(mainPath, apiFirst),
-      // 초안에는 원문을 붙이지 않는다
-      isDraft ? Promise.resolve(null) : loadDoc(originalPath, apiFirst),
-    ]);
+    // 초안에는 딸린 문서를 붙이지 않는다
+    const kinds = isDraft ? [Docs.byKey('main')] : Docs.all();
 
-    state.main = main;
-    state.original = original;
+    const loaded = await Promise.all(
+      kinds.map((kind) => loadDoc(pathOf(kind.key), apiFirst))
+    );
+    kinds.forEach((kind, i) => {
+      state.docs[kind.key] = loaded[i];
+    });
 
-    if (!main) {
+    if (!state.docs.main) {
       renderMissing(
         Store.hasToken()
           ? '글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.'
@@ -95,11 +98,16 @@
       return;
     }
 
-    // 원문을 보려는데 아직 없으면 정리본으로 돌린다
-    if (state.view === 'original' && !original) {
+    // 보려는 문서가 아직 없으면 정리본으로 돌린다
+    const wanted = params.get('view') || 'main';
+    if (wanted !== 'main' && Docs.byKey(wanted) && state.docs[wanted]) {
+      state.view = wanted;
+    } else {
       state.view = 'main';
-      if (Store.hasToken()) {
-        App.toast('원문이 아직 없습니다. 아래 원문 추가로 만들 수 있습니다.');
+      if (wanted !== 'main' && Store.hasToken()) {
+        App.toast(
+          `${Docs.labelOf(wanted) || '문서'}이 아직 없습니다. 탭에서 추가할 수 있습니다.`
+        );
       }
     }
 
@@ -120,49 +128,31 @@
     );
   }
 
-  /** 지금 보고 있는 문서와 그 경로 */
   function currentDoc() {
-    return state.view === 'original' ? state.original : state.main;
+    return state.docs[state.view];
   }
 
   function currentPath() {
-    return state.view === 'original' ? originalPath : mainPath;
+    return pathOf(state.view);
   }
 
   function render() {
     const doc = currentDoc();
     const parsed = MD.parseFrontmatter(doc.text);
-    const meta = parsed.meta;
     const body = parsed.body;
 
-    // 제목은 항상 정리본 기준 (원문에도 같은 제목을 쓴다)
-    const mainMeta = MD.parseFrontmatter(state.main.text).meta;
-    const title = mainMeta.title || meta.title || id;
+    // 제목·날짜·태그는 언제나 정리본 기준
+    const mainMeta = MD.parseFrontmatter(state.docs.main.text).meta;
+    const title = mainMeta.title || id;
+    const isMain = state.view === 'main';
 
     document.title =
-      (state.view === 'original' ? `${title} — 원문` : title) + ` · ${cfg.siteName}`;
+      (isMain ? title : `${title} — ${Docs.labelOf(state.view)}`) +
+      ` · ${cfg.siteName}`;
 
     // ── 머리말 ──
-    const metaBits = [];
-    if (mainMeta.date) {
-      metaBits.push(el('span', { text: App.formatDate(mainMeta.date) }));
-      metaBits.push(el('span', { class: 'dot' }));
-    }
-    metaBits.push(el('span', { text: `${MD.readingTime(body)}분 읽기` }));
-    if (state.view === 'main' && mainMeta.status) {
-      metaBits.push(el('span', { class: 'dot' }));
-      metaBits.push(el('span', { text: mainMeta.status }));
-    }
-    if (state.view === 'original') {
-      metaBits.push(el('span', { class: 'badge badge-original', text: '원문' }));
-    }
-    if (isDraft) {
-      metaBits.push(el('span', { class: 'badge badge-draft', text: '초안' }));
-    }
-
     const header = el('header', { class: 'post-header' }, []);
 
-    // 이 글이 담긴 폴더 위치
     const folder = window.Folders
       ? window.Folders.normalizePath(mainMeta.folder)
       : '';
@@ -184,6 +174,28 @@
     }
 
     header.appendChild(el('h1', { text: title }));
+
+    const metaBits = [];
+    if (mainMeta.date) {
+      metaBits.push(el('span', { text: App.formatDate(mainMeta.date) }));
+      metaBits.push(el('span', { class: 'dot' }));
+    }
+    metaBits.push(el('span', { text: `${MD.readingTime(body)}분 읽기` }));
+    if (isMain && mainMeta.status) {
+      metaBits.push(el('span', { class: 'dot' }));
+      metaBits.push(el('span', { text: mainMeta.status }));
+    }
+    if (!isMain) {
+      metaBits.push(
+        el('span', {
+          class: 'badge badge-' + state.view,
+          text: Docs.labelOf(state.view),
+        })
+      );
+    }
+    if (isDraft) {
+      metaBits.push(el('span', { class: 'badge badge-draft', text: '초안' }));
+    }
     header.appendChild(el('div', { class: 'post-meta' }, metaBits));
 
     const tags = mainMeta.tags || [];
@@ -209,18 +221,13 @@
 
     // ── 본문 ──
     const prose = el('div', { class: 'prose' });
-    prose.innerHTML = MD.render(body);
-
-    // 원문이 비어 있으면 안내
-    if (!body.trim()) {
-      prose.innerHTML = '';
+    if (body.trim()) {
+      prose.innerHTML = MD.render(body);
+    } else {
       prose.appendChild(
         el('p', {
           class: 'muted-note',
-          text:
-            state.view === 'original'
-              ? '원문이 아직 비어 있습니다.'
-              : '내용이 비어 있습니다.',
+          text: `${Docs.labelOf(state.view) || '내용'}이 아직 비어 있습니다.`,
         })
       );
     }
@@ -259,55 +266,60 @@
     startProgress();
   }
 
-  /** 정리 / 원문 전환 */
+  /** 정리 / 요약본 / 원문 전환 */
   function buildSwitcher() {
     if (isDraft) return null;
 
-    const hasOriginal = !!state.original;
+    const canEdit = Store.hasToken();
+    const existing = Docs.companions().filter((k) => state.docs[k.key]);
 
-    // 원문도 없고 만들 권한도 없으면 아무것도 보여주지 않는다
-    if (!hasOriginal && !Store.hasToken()) return null;
+    // 딸린 문서가 없고 만들 권한도 없으면 탭을 감춘다
+    if (!existing.length && !canEdit) return null;
 
     const box = el('div', { class: 'view-switch', role: 'tablist' });
 
-    box.appendChild(
-      el('a', {
-        class: 'view-tab' + (state.view === 'main' ? ' is-active' : ''),
-        href: 'post.html?id=' + encodeURIComponent(id),
-        text: '정리',
-        role: 'tab',
-        'aria-selected': state.view === 'main' ? 'true' : 'false',
-      })
-    );
+    const tabHref = (key) =>
+      'post.html?id=' +
+      encodeURIComponent(id) +
+      (key === 'main' ? '' : '&view=' + key);
 
-    if (hasOriginal) {
-      box.appendChild(
-        el('a', {
-          class: 'view-tab' + (state.view === 'original' ? ' is-active' : ''),
-          href: 'post.html?id=' + encodeURIComponent(id) + '&view=original',
-          text: '원문',
-          role: 'tab',
-          'aria-selected': state.view === 'original' ? 'true' : 'false',
-        })
-      );
-    } else {
-      box.appendChild(
-        el('a', {
-          class: 'view-tab is-add',
-          href: 'write.html?id=' + encodeURIComponent(id) + '&kind=original',
-          text: '＋ 원문 추가',
-        })
-      );
-    }
+    Docs.all().forEach((kind) => {
+      const has = kind.key === 'main' || !!state.docs[kind.key];
+
+      if (has) {
+        box.appendChild(
+          el('a', {
+            class: 'view-tab' + (state.view === kind.key ? ' is-active' : ''),
+            href: tabHref(kind.key),
+            text: kind.label,
+            role: 'tab',
+            'aria-selected': state.view === kind.key ? 'true' : 'false',
+          })
+        );
+      } else if (canEdit) {
+        box.appendChild(
+          el('a', {
+            class: 'view-tab is-add',
+            href:
+              'write.html?id=' +
+              encodeURIComponent(id) +
+              '&kind=' +
+              kind.key,
+            text: '＋ ' + kind.label,
+            title: `${kind.label} 추가`,
+          })
+        );
+      }
+    });
 
     return box;
   }
 
   function buildActions(title) {
     const box = el('div', { class: 'post-actions' });
-    const editingOriginal = state.view === 'original';
+    const isMain = state.view === 'main';
+    const label = Docs.labelOf(state.view);
 
-    // 수정 — 지금 보고 있는 문서를 고친다
     box.appendChild(
       el('a', {
         class: 'btn btn-sm',
@@ -315,8 +327,8 @@
           'write.html?id=' +
           encodeURIComponent(id) +
           (isDraft ? '&draft=1' : '') +
-          (editingOriginal ? '&kind=original' : ''),
-        text: editingOriginal ? '원문 수정' : '수정',
+          (isMain ? '' : '&kind=' + state.view),
+        text: isMain ? '수정' : `${label} 수정`,
       })
     );
 
@@ -344,7 +356,7 @@
       el('button', {
         class: 'btn btn-sm btn-quiet',
         type: 'button',
-        text: editingOriginal ? '원문 삭제' : '삭제',
+        text: isMain ? '삭제' : `${label} 삭제`,
         onclick: () => remove(title),
       })
     );
@@ -355,8 +367,9 @@
   // ── 동작 ──────────────────────────────────
 
   async function remove(title) {
-    const editingOriginal = state.view === 'original';
-    const what = editingOriginal ? `"${title}" 의 원문` : `"${title}"`;
+    const isMain = state.view === 'main';
+    const label = Docs.labelOf(state.view);
+    const what = isMain ? `"${title}"` : `"${title}" 의 ${label}`;
 
     const ok = await App.confirmDialog(
       `${what} 을 삭제할까요? 저장소에서 파일이 지워집니다. (커밋 이력에는 남습니다)`,
@@ -371,13 +384,13 @@
       await GH.deleteFile(
         currentPath(),
         doc.sha || undefined,
-        editingOriginal ? `post: ${title} 원문 삭제` : `post: ${title} 삭제`
+        isMain ? `post: ${title} 삭제` : `post: ${title} ${label} 삭제`
       );
       App.toast('삭제했습니다.', 'success');
       setTimeout(() => {
-        window.location.href = editingOriginal
-          ? `post.html?id=${encodeURIComponent(id)}`
-          : 'index.html';
+        window.location.href = isMain
+          ? 'index.html'
+          : `post.html?id=${encodeURIComponent(id)}`;
       }, 700);
     } catch (err) {
       App.toast(err.message, 'error');
@@ -391,7 +404,7 @@
     try {
       App.toast('발행 중…');
       await GH.moveFile(
-        mainPath,
+        pathOf('main'),
         `${cfg.postsDir}/${id}.md`,
         `post: ${title} 발행`
       );
@@ -406,11 +419,12 @@
 
   async function showHistory() {
     const path = currentPath();
+    const isMain = state.view === 'main';
     const box = el('div', {}, [
       el('p', { class: 'modal-text', text: '불러오는 중…' }),
     ]);
     App.openModal(
-      state.view === 'original' ? '원문 변경 기록' : '변경 기록',
+      isMain ? '변경 기록' : `${Docs.labelOf(state.view)} 변경 기록`,
       box
     );
 

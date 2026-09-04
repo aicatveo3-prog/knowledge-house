@@ -6,8 +6,17 @@ import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
 const POSTS_DIR = 'posts';
-const ORIGINALS_DIR = 'originals';
 const OUT_DIR = 'data';
+
+/**
+ * 글에 딸린 문서들. js/docs.js 의 KINDS 와 짝을 맞춘다.
+ *   summaries/<id>.md → hasSummary
+ *   originals/<id>.md → hasOriginal
+ */
+const COMPANIONS = [
+  { dir: 'summaries', flag: 'hasSummary' },
+  { dir: 'originals', flag: 'hasOriginal' },
+];
 const OUT_FILE = path.join(OUT_DIR, 'posts.json');
 
 /** --- 사이 메타데이터 분리 */
@@ -130,21 +139,22 @@ async function main() {
     });
   }
 
-  // 짝이 되는 원문이 있는지 표시
-  let originalIds = new Set();
-  try {
-    originalIds = new Set(
-      (await readdir(ORIGINALS_DIR))
-        .filter((f) => f.endsWith('.md'))
-        .map((f) => f.replace(/\.md$/, ''))
-    );
-  } catch (e) {
-    /* originals 폴더가 없으면 원문 없음 */
+  // 딸린 문서(요약본·원문)가 있는지 표시
+  for (const companion of COMPANIONS) {
+    let ids = new Set();
+    try {
+      ids = new Set(
+        (await readdir(companion.dir))
+          .filter((f) => f.endsWith('.md'))
+          .map((f) => f.replace(/\.md$/, ''))
+      );
+    } catch (e) {
+      /* 폴더가 없으면 해당 문서 없음 */
+    }
+    posts.forEach((p) => {
+      p[companion.flag] = ids.has(p.id);
+    });
   }
-
-  posts.forEach((p) => {
-    p.hasOriginal = originalIds.has(p.id);
-  });
 
   posts.sort((a, b) => {
     if (a.date === b.date) return b.id.localeCompare(a.id);
