@@ -41,6 +41,16 @@
   --font-mono: 'SFMono-Regular', ui-monospace, 'JetBrains Mono', Menlo, Consolas,
     'D2Coding', monospace;
 
+  /*
+   * 줄간격 — 이 값만 바꾸면 전체가 따라온다
+   *   prose  글 본문·에디터 (둘이 같아야 미리보기가 맞다)
+   *   body   버튼·목록 같은 화면 요소
+   *   tight  코드·표처럼 촘촘해야 하는 곳
+   */
+  --leading-prose: 1.72;
+  --leading-body: 1.62;
+  --leading-tight: 1.5;
+
   /* 본문 폭 — 한글은 한 줄 35~40자가 읽기 편하다 */
   --measure: 40rem;
   --measure-wide: 52rem;
@@ -148,7 +158,7 @@ body {
   color: var(--ink);
   font-family: var(--font);
   font-size: 16px;
-  line-height: 1.75;
+  line-height: var(--leading-body);
   font-feature-settings: 'ss01', 'cv01';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -445,7 +455,7 @@ main {
   color: var(--ink-soft);
   font-size: 0.73rem;
   font-weight: 500;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 .badge-pending {
@@ -835,7 +845,7 @@ main {
   margin: 0 0 0.6rem;
   color: var(--ink-soft);
   font-size: 0.92rem;
-  line-height: 1.7;
+  line-height: var(--leading-body);
   word-break: keep-all;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -1048,7 +1058,7 @@ main {
 
 .prose {
   font-size: 1.0625rem;
-  line-height: 1.9;
+  line-height: var(--leading-prose);
   letter-spacing: -0.003em;
   word-break: keep-all;
   overflow-wrap: break-word;
@@ -1063,7 +1073,7 @@ main {
 }
 
 .prose p {
-  margin: 0 0 1.5rem;
+  margin: 0 0 1.3rem;
 }
 
 /* 제목 — 위계를 크기·굵기·여백 세 가지로 함께 준다 */
@@ -1072,7 +1082,7 @@ main {
 .prose h3,
 .prose h4 {
   font-weight: 690;
-  line-height: 1.4;
+  line-height: 1.35;
   letter-spacing: -0.028em;
   word-break: keep-all;
   scroll-margin-top: 5rem;
@@ -1150,12 +1160,12 @@ main {
 /* 목록 */
 .prose ul,
 .prose ol {
-  margin: 0 0 1.5rem;
+  margin: 0 0 1.3rem;
   padding-left: 1.3rem;
 }
 
 .prose li {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
   padding-left: 0.15rem;
 }
 
@@ -1206,7 +1216,7 @@ main {
   background: var(--bg-soft);
   color: var(--ink-soft);
   font-size: 1.05em;
-  line-height: 1.85;
+  line-height: var(--leading-prose);
 }
 
 .prose blockquote p {
@@ -1227,13 +1237,13 @@ main {
   background: var(--accent-soft);
   color: var(--ink);
   font-size: 0.98em;
-  line-height: 1.8;
+  line-height: var(--leading-prose);
 }
 
 .prose .callout-icon {
   flex-shrink: 0;
   font-size: 1.05rem;
-  line-height: 1.75;
+  line-height: var(--leading-prose);
 }
 
 .prose .callout-body > *:last-child {
@@ -1264,7 +1274,7 @@ main {
   border-radius: var(--r-md);
   background: var(--bg-soft);
   overflow-x: auto;
-  line-height: 1.7;
+  line-height: var(--leading-tight);
 }
 
 .prose pre code {
@@ -1321,7 +1331,7 @@ main {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.94rem;
-  line-height: 1.65;
+  line-height: var(--leading-tight);
 }
 
 .prose th {
@@ -1460,7 +1470,7 @@ main {
   color: var(--ink);
   font-family: inherit;
   font-size: 1.0625rem;
-  line-height: 1.9;
+  line-height: var(--leading-prose);
   letter-spacing: -0.003em;
   resize: none;
   overflow: hidden;
@@ -1481,7 +1491,7 @@ main {
   border-top: 1px solid var(--line-soft);
   color: var(--ink-faint);
   font-size: 0.81rem;
-  line-height: 1.9;
+  line-height: var(--leading-prose);
 }
 
 .editor-hint kbd {
@@ -1624,7 +1634,7 @@ main {
   margin: 0 0 1rem;
   color: var(--ink-soft);
   font-size: 0.9rem;
-  line-height: 1.75;
+  line-height: var(--leading-body);
   word-break: keep-all;
 }
 
@@ -1670,7 +1680,7 @@ main {
   margin: 0.45rem 0 0;
   color: var(--ink-faint);
   font-size: 0.78rem;
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 
 .settings-form {
@@ -1690,7 +1700,7 @@ main {
   margin: 0 0 1rem;
   color: var(--ink-soft);
   font-size: 0.84rem;
-  line-height: 1.65;
+  line-height: var(--leading-body);
   word-break: keep-all;
 }
 
@@ -1732,7 +1742,7 @@ main {
   margin: 0;
   padding: 0 1.5rem 0.7rem;
   color: var(--ink-soft);
-  line-height: 1.8;
+  line-height: var(--leading-body);
 }
 
 .guide li {
@@ -1753,7 +1763,7 @@ main {
   border-top: 1px solid var(--line-soft);
   color: var(--ink-soft);
   font-size: 0.8rem;
-  line-height: 1.7;
+  line-height: var(--leading-body);
 }
 
 /* 작은 화면 =============================================================== */
@@ -1798,7 +1808,7 @@ main {
 
   .prose {
     font-size: 1.03rem;
-    line-height: 1.85;
+    line-height: var(--leading-prose);
   }
 
   .prose h2 {
@@ -1867,7 +1877,7 @@ main {
 
   .prose {
     font-size: 11pt;
-    line-height: 1.7;
+    line-height: var(--leading-tight);
   }
 
   .prose a {
