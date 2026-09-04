@@ -211,6 +211,9 @@
     (post.tags || []).slice(0, 3).forEach((t) => {
       meta.push(el('span', { class: 'badge', text: '#' + t }));
     });
+    if (post.hasSummary) {
+      meta.push(el('span', { class: 'badge badge-summary', text: '요약본' }));
+    }
     if (post.hasOriginal) {
       meta.push(el('span', { class: 'badge badge-original', text: '원문' }));
     }

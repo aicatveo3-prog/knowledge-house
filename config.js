@@ -19,7 +19,10 @@ window.SITE_CONFIG = {
   draftsDir: 'drafts',
   imagesDir: 'assets/images',
 
-  // 글마다 짝이 되는 '원문'이 저장되는 폴더
-  // posts/2026-09-03-챕터1.md  ↔  originals/2026-09-03-챕터1.md
+  // 글마다 짝이 되는 문서들이 저장되는 폴더
+  // posts/2026-09-03-챕터1.md
+  //   ↔ summaries/2026-09-03-챕터1.md  (요약본)
+  //   ↔ originals/2026-09-03-챕터1.md  (원문)
+  summariesDir: 'summaries',
   originalsDir: 'originals',
 };

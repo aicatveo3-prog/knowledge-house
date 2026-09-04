@@ -4,6 +4,7 @@
 (function () {
   const cfg = window.SITE_CONFIG;
   const el = App.el;
+  const Docs = window.Docs;
 
   const $title = document.getElementById('title');
   const $body = document.getElementById('body');
@@ -31,9 +32,9 @@
     saving: false,
     previewing: false,
 
-    // 원문 편집 모드
-    // 원문은 정리본과 파일명이 같아야 짝이 유지되므로 경로를 고정한다
-    isOriginal: false,
+    // 딸린 문서(요약본·원문) 편집 모드
+    // 정리본과 파일명이 같아야 짝이 유지되므로 경로를 고정한다
+    kind: 'main',
     fixedPath: null,
   };
 
@@ -495,10 +496,10 @@
     $saveState.textContent = text;
   }
 
-  /** 임시 저장 열쇠 — 원문과 정리본이 섞이지 않게 구분한다 */
+  /** 임시 저장 열쇠 — 종류별로 섞이지 않게 구분한다 */
   function localKey() {
     if (!state.id) return null;
-    return state.isOriginal ? 'original:' + state.id : state.id;
+    return state.kind === 'main' ? state.id : state.kind + ':' + state.id;
   }
 
   const scheduleLocalSave = App.debounce(() => {
@@ -626,7 +627,7 @@
       state.path = desired;
       // 번호가 붙었을 수 있으므로 실제 저장된 경로에서 식별자를 뽑는다
       state.id = desired.split('/').pop().replace(/\.md$/, '');
-      state.isDraft = !state.isOriginal && targetDir === cfg.draftsDir;
+      state.isDraft = state.kind === 'main' && targetDir === cfg.draftsDir;
       state.dirty = false;
       Store.clearLocalDraft(null);
       Store.clearLocalDraft(localKey());
@@ -649,15 +650,19 @@
   }
 
   async function publish() {
-    // 원문은 발행 개념이 없고 그 자리에 저장만 한다
-    if (state.isOriginal) {
-      const ok = await persist(cfg.originalsDir, '원문 저장');
+    // 딸린 문서는 발행 개념이 없고 그 자리에 저장만 한다
+    if (Docs.isCompanion(state.kind)) {
+      const label = Docs.labelOf(state.kind);
+      const ok = await persist(Docs.dirOf(state.kind), `${label} 저장`);
       if (!ok) return;
 
-      App.toast('원문을 저장했습니다.', 'success');
+      App.toast(`${label}을 저장했습니다.`, 'success');
       setTimeout(() => {
         window.location.href =
-          'post.html?id=' + encodeURIComponent(state.id) + '&view=original&fresh=1';
+          'post.html?id=' +
+          encodeURIComponent(state.id) +
+          '&view=' + state.kind +
+          '&fresh=1';
       }, 800);
       return;
     }
@@ -718,24 +723,26 @@
     });
   }
 
-  // ── 원문 불러오기 ──────────────────────────
+  // ── 딸린 문서(요약본·원문) 불러오기 ──────────
 
   /**
-   * 원문 편집 준비.
-   * 원문이 이미 있으면 그것을, 없으면 정리본의 제목·날짜를 물려받아 새로 시작합니다.
+   * 요약본·원문 편집 준비.
+   * 이미 있으면 그것을, 없으면 정리본의 제목·날짜를 물려받아 새로 시작합니다.
    */
-  async function loadOriginal(postId) {
+  async function loadCompanion(kind, postId) {
+    const label = Docs.labelOf(kind);
+
     if (!Store.hasToken()) {
-      App.toast('원문을 쓰려면 토큰이 필요합니다.', 'error');
+      App.toast(`${label}을 쓰려면 토큰이 필요합니다.`, 'error');
       return;
     }
 
-    state.isOriginal = true;
+    state.kind = kind;
     state.id = postId;
-    state.fixedPath = `${cfg.originalsDir}/${postId}.md`;
+    state.fixedPath = Docs.pathFor(kind, postId);
     state.path = null;
 
-    applyOriginalMode();
+    applyCompanionMode(kind);
     setSaveState('불러오는 중…');
 
     try {
@@ -764,35 +771,38 @@
           body: '',
         });
         state.sha = null;
-        App.toast('원문을 새로 만듭니다. 내용을 붙여넣고 저장하세요.');
+        App.toast(`${label}을 새로 만듭니다. 내용을 붙여넣고 저장하세요.`);
       }
 
       state.dirty = false;
       setSaveState('');
-      document.title = `원문 편집 · ${cfg.siteName}`;
+      document.title = `${label} 편집 · ${cfg.siteName}`;
       $body.focus();
 
-      offerLocalRecovery('original:' + postId);
+      offerLocalRecovery(kind + ':' + postId);
     } catch (err) {
       setSaveState('');
       App.toast(err.message, 'error');
     }
   }
 
-  /** 원문 모드일 때 화면 정리 */
-  function applyOriginalMode() {
-    // 원문에는 폴더·태그·상태가 필요 없다 (정리본을 따른다)
+  /** 요약본·원문 모드일 때 화면 정리 */
+  function applyCompanionMode(kind) {
+    const label = Docs.labelOf(kind);
+
+    // 폴더·태그·상태는 정리본을 따르므로 감춘다
     $folder.classList.add('hidden');
     $tags.classList.add('hidden');
     $status.classList.add('hidden');
 
     // 초안 개념이 없으므로 감춘다
     $btnDraft.classList.add('hidden');
-    $btnPublish.textContent = '원문 저장';
+    $btnPublish.textContent = `${label} 저장`;
 
     const back = 'post.html?id=' + encodeURIComponent(state.id);
-    const banner = el('div', { class: 'notice notice-original' }, [
-      el('span', { text: '📄 원문을 편집하고 있습니다.' }),
+    const icon = kind === 'summary' ? '📝' : '📄';
+    const banner = el('div', { class: 'notice notice-companion' }, [
+      el('span', { text: `${icon} ${label}을 편집하고 있습니다.` }),
       el('span', { class: 'spacer' }),
       el('a', { class: 'btn btn-sm btn-quiet', href: back, text: '정리본으로' }),
     ]);
@@ -1038,11 +1048,11 @@
     const id = params.get('id');
     const kind = params.get('kind');
 
-    if (kind === 'original') {
+    if (Docs.isCompanion(kind)) {
       if (!id) {
-        App.toast('원문은 글에서 열어야 합니다.', 'error');
+        App.toast(`${Docs.labelOf(kind)}은 글에서 열어야 합니다.`, 'error');
       } else {
-        loadOriginal(id);
+        loadCompanion(kind, id);
       }
     } else if (id) {
       loadExisting(id, params.get('draft') === '1');
@@ -1060,8 +1070,8 @@
       $title.focus();
     }
 
-    // 원문 모드에서는 폴더 칸을 쓰지 않으므로 후보를 채우지 않는다
-    if (kind !== 'original') loadFolderOptions();
+    // 딸린 문서는 폴더 칸을 쓰지 않으므로 후보를 채우지 않는다
+    if (!Docs.isCompanion(kind)) loadFolderOptions();
 
     autoGrow($title);
     autoGrow($body);

@@ -463,6 +463,15 @@ main {
   color: var(--accent-ink);
 }
 
+.badge-summary {
+  background: color-mix(in srgb, #7a6296 14%, transparent);
+  color: #665083;
+}
+
+:root[data-theme='dark'] .badge-summary {
+  color: #b69fd0;
+}
+
 .badge-original {
   background: color-mix(in srgb, #5a6f9e 14%, transparent);
   color: #4a5f8d;
@@ -1004,8 +1013,8 @@ main {
   color: var(--accent-ink);
 }
 
-/* 원문 편집 중임을 알리는 띠 */
-.notice-original {
+/* 요약본·원문 편집 중임을 알리는 띠 */
+.notice-companion {
   margin-top: 0;
   border-color: color-mix(in srgb, #5a6f9e 30%, var(--line));
   background: color-mix(in srgb, #5a6f9e 7%, var(--bg-soft));
