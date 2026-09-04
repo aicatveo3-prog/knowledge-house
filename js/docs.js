@@ -12,8 +12,8 @@
   const cfg = () => window.SITE_CONFIG || {};
 
   const KINDS = [
-    { key: 'main', label: '정리', dirKey: 'postsDir' },
     { key: 'summary', label: '요약본', dirKey: 'summariesDir' },
+    { key: 'main', label: '정리', dirKey: 'postsDir' },
     { key: 'original', label: '원문', dirKey: 'originalsDir' },
   ];
 
