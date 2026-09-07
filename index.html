@@ -41,6 +41,27 @@
 
       <div class="tag-row" id="tag-row"></div>
 
+      <!-- 프롬프트 메모장 -->
+      <section class="prompt-pad" id="prompt-pad">
+        <button class="prompt-pad-toggle" id="prompt-pad-toggle" type="button">
+          <span class="prompt-pad-icon">📋</span>
+          <span class="prompt-pad-label">프롬프트 메모장</span>
+          <span class="prompt-pad-arrow" id="prompt-pad-arrow">›</span>
+        </button>
+        <div class="prompt-pad-body hidden" id="prompt-pad-body">
+          <div class="prompt-pad-card">
+            <h3 class="prompt-pad-title">요약본용</h3>
+            <p class="prompt-pad-text">다음 글을 요약본으로 정리해줘. 너가 스스로 글을 쓰진 말고, 글의 내용을 기반으로만 정리해. 원문 흐름대로 항목화하고, 핵심 키워드와 짧은 문장 위주로. 인용문은 그대로 살릴 것.</p>
+            <button class="btn btn-sm btn-quiet prompt-pad-copy" type="button" data-copy="요약본">복사</button>
+          </div>
+          <div class="prompt-pad-card">
+            <h3 class="prompt-pad-title">정리본용</h3>
+            <p class="prompt-pad-text">다음 글을 정리본으로 만들어줘. 너가 스스로 글을 쓰진 말고, 글의 내용을 기반으로만 정리해. 논리적 흐름(문제→원인→전환→근거→실천)으로 재구성하고, 서술형 문장으로 읽기 쉽게. 마지막에 한 문장 요약 포함.</p>
+            <button class="btn btn-sm btn-quiet prompt-pad-copy" type="button" data-copy="정리본">복사</button>
+          </div>
+        </div>
+      </section>
+
       <div id="list">
         <div class="skeleton">
           <div class="skeleton-bar" style="width: 45%"></div>

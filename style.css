@@ -1775,6 +1775,93 @@ main {
   line-height: var(--leading-body);
 }
 
+/* 9. 프롬프트 메모장 ====================================================== */
+
+.prompt-pad {
+  margin-bottom: 1.8rem;
+}
+
+.prompt-pad-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg-soft);
+  color: var(--ink-soft);
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 520;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.prompt-pad-toggle:hover {
+  background: var(--bg-sink);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.prompt-pad-icon {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.prompt-pad-arrow {
+  display: inline-block;
+  font-size: 0.8rem;
+  transition: transform 0.2s ease;
+}
+
+.prompt-pad-arrow.is-open {
+  transform: rotate(90deg);
+}
+
+.prompt-pad-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.prompt-pad-card {
+  position: relative;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.prompt-pad-title {
+  margin: 0 0 0.45rem;
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+}
+
+.prompt-pad-text {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.83rem;
+  line-height: 1.55;
+  word-break: keep-all;
+  user-select: all;
+}
+
+.prompt-pad-copy {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  font-size: 0.76rem !important;
+  padding: 0.22rem 0.55rem !important;
+}
+
+.prompt-pad-copy.is-copied {
+  color: var(--accent-ink);
+}
+
 /* 작은 화면 =============================================================== */
 
 /* 중간 화면 — 카드 안쪽 여백을 줄인다 */
