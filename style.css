@@ -946,6 +946,71 @@ main {
   border-bottom: 1px solid var(--line-soft);
 }
 
+/* 목록으로 돌아가기 — 누를 수 있다는 게 보여야 한다 */
+.post-back {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem 0.5rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 100px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.87rem;
+  font-weight: 560;
+  line-height: 1.4;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+  transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.back-btn:hover {
+  background: var(--bg-sink);
+  border-color: var(--line-strong);
+  box-shadow: none;
+}
+
+.back-btn:active {
+  transform: translateY(1px);
+}
+
+/* 화살표는 마우스를 올리면 왼쪽으로 살짝 물러난다 — 돌아간다는 신호 */
+.back-arrow {
+  color: var(--ink-faint);
+  font-size: 0.95rem;
+  line-height: 1;
+  transition: transform 0.18s, color 0.15s;
+}
+
+.back-btn:hover .back-arrow {
+  transform: translateX(-2px);
+  color: var(--accent-ink);
+}
+
+/* 보조 경로(전체, 중간 폴더)는 한 단계 조용하게 */
+.back-btn-quiet {
+  padding-left: 0.9rem;
+  border-color: transparent;
+  background: transparent;
+  color: var(--ink-soft);
+  font-weight: 500;
+  box-shadow: none;
+}
+
+.back-btn-quiet:hover {
+  background: var(--bg-sink);
+  border-color: transparent;
+  color: var(--ink);
+}
+
 .post-header h1 {
   margin: 0 0 1.1rem;
   font-size: clamp(1.75rem, 5.5vw, 2.4rem);
@@ -1896,6 +1961,15 @@ main {
   .post-header {
     padding-bottom: 1.4rem;
     margin-bottom: 2rem;
+  }
+
+  /* 손가락으로 누르는 화면에서는 조금 더 크게 */
+  .back-btn {
+    padding: 0.6rem 1rem 0.6rem 0.85rem;
+  }
+
+  .back-btn-quiet {
+    padding-left: 1rem;
   }
 
   .post-item > a {
