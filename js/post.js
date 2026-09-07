@@ -160,22 +160,69 @@
     const folder = window.Folders
       ? window.Folders.normalizePath(mainMeta.folder)
       : '';
-    if (folder) {
-      const crumb = el('nav', { class: 'breadcrumb', 'aria-label': '폴더 위치' }, [
-        el('a', { class: 'crumb', href: 'index.html', text: '전체' }),
-      ]);
-      window.Folders.breadcrumb(folder).forEach((part) => {
-        crumb.appendChild(el('span', { class: 'crumb-sep', text: '›' }));
-        crumb.appendChild(
-          el('a', {
-            class: 'crumb',
-            href: 'index.html?folder=' + encodeURIComponent(part.path),
-            text: part.name,
-          })
-        );
-      });
-      header.appendChild(crumb);
+
+    // ── 돌아가기 ──
+    //
+    // 예전에는 '전체 › 책1' 같은 작은 글자 링크였다. 글을 읽고 나서
+    // 목록으로 되돌아가는 건 이 화면에서 가장 자주 하는 행동인데,
+    // 그 길이 본문 장식처럼 보여 눈에 띄지 않았다.
+    // 그래서 누를 수 있다는 게 분명히 보이는 버튼으로 바꾼다.
+    //   ← 책1   (이 글이 담긴 폴더로 — 가장 자주 쓰는 길이라 가장 크게)
+    //     전체  (맨 처음 화면으로 — 보조라서 조용하게)
+    const parts =
+      folder && window.Folders ? window.Folders.breadcrumb(folder) : [];
+    const here = parts.length ? parts[parts.length - 1] : null;
+
+    const backNav = el('nav', { class: 'post-back', 'aria-label': '돌아가기' });
+
+    if (here) {
+      backNav.appendChild(
+        el(
+          'a',
+          {
+            class: 'back-btn',
+            href: 'index.html?folder=' + encodeURIComponent(here.path),
+            title: `${here.name} 목록으로 돌아가기`,
+          },
+          [
+            el('span', { class: 'back-arrow', 'aria-hidden': 'true', text: '←' }),
+            el('span', { text: here.name }),
+          ]
+        )
+      );
     }
+
+    // 중간 폴더가 있으면 (책1/파트2 처럼) 조용한 링크로 함께 둔다
+    parts.slice(0, -1).forEach((part) => {
+      backNav.appendChild(
+        el('a', {
+          class: 'back-btn back-btn-quiet',
+          href: 'index.html?folder=' + encodeURIComponent(part.path),
+          text: part.name,
+          title: `${part.name} 목록으로 돌아가기`,
+        })
+      );
+    });
+
+    backNav.appendChild(
+      el(
+        'a',
+        {
+          class: 'back-btn back-btn-quiet',
+          href: 'index.html',
+          title: '전체 글 목록으로 돌아가기',
+        },
+        [
+          // 폴더가 없는 글이면 이 링크가 유일한 길이므로 화살표를 붙인다
+          here
+            ? null
+            : el('span', { class: 'back-arrow', 'aria-hidden': 'true', text: '←' }),
+          el('span', { text: '전체' }),
+        ]
+      )
+    );
+
+    header.appendChild(backNav);
 
     header.appendChild(el('h1', { text: title }));
 
