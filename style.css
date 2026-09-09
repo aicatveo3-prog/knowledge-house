@@ -1869,6 +1869,17 @@ main {
   margin-bottom: 1.8rem;
 }
 
+.prompt-pad-row {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.8rem;
+}
+
+.prompt-pad-row > .prompt-pad {
+  margin-bottom: 0;
+}
+
 .prompt-pad-toggle {
   display: inline-flex;
   align-items: center;
