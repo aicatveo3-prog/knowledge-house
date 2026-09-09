@@ -16,6 +16,8 @@ const OUT_DIR = 'data';
 const COMPANIONS = [
   { dir: 'summaries', flag: 'hasSummary' },
   { dir: 'originals', flag: 'hasOriginal' },
+  { dir: 'posts2', flag: 'hasMain2' },
+  { dir: 'summaries2', flag: 'hasSummary2' },
 ];
 const OUT_FILE = path.join(OUT_DIR, 'posts.json');
 
