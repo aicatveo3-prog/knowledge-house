@@ -23,6 +23,10 @@ window.SITE_CONFIG = {
   // posts/2026-09-03-챕터1.md
   //   ↔ summaries/2026-09-03-챕터1.md  (요약본)
   //   ↔ originals/2026-09-03-챕터1.md  (원문)
+  //   ↔ posts2/2026-09-03-챕터1.md     (정리2)
+  //   ↔ summaries2/2026-09-03-챕터1.md (요약본2)
   summariesDir: 'summaries',
   originalsDir: 'originals',
+  posts2Dir: 'posts2',
+  summaries2Dir: 'summaries2',
 };

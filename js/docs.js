@@ -15,6 +15,8 @@
     { key: 'summary', label: '요약본', dirKey: 'summariesDir' },
     { key: 'main', label: '정리', dirKey: 'postsDir' },
     { key: 'original', label: '원문', dirKey: 'originalsDir' },
+    { key: 'summary2', label: '요약본2', dirKey: 'summaries2Dir' },
+    { key: 'main2', label: '정리2', dirKey: 'posts2Dir' },
   ];
 
   function all() {
