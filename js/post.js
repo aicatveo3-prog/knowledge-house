@@ -285,25 +285,6 @@
 
     const footer = el('div', { class: 'post-footer' }, [
       el('a', { class: 'btn btn-sm btn-quiet', href: 'index.html', text: '← 목록' }),
-      el('span', { class: 'spacer' }),
-      el('button', {
-        class: 'btn btn-sm copy-body-btn',
-        type: 'button',
-        text: '📋 본문 복사',
-        title: '이 글의 본문을 클립보드에 복사합니다',
-        onclick: function () {
-          const btn = this;
-          navigator.clipboard.writeText(body).then(() => {
-            const prev = btn.textContent;
-            btn.textContent = '복사됨 ✓';
-            btn.classList.add('is-copied');
-            setTimeout(() => {
-              btn.textContent = prev;
-              btn.classList.remove('is-copied');
-            }, 1500);
-          });
-        },
-      }),
       el('button', {
         class: 'btn btn-sm btn-quiet',
         type: 'button',
@@ -328,6 +309,29 @@
 
     const switcher = buildSwitcher();
     if (switcher) root.appendChild(switcher);
+
+    // ── 본문 복사 버튼 (상단) ──
+    const copyBtn = el('button', {
+      class: 'btn btn-sm copy-body-btn',
+      type: 'button',
+      text: '📋 본문 복사',
+      title: '이 글의 본문을 클립보드에 복사합니다',
+      onclick: function () {
+        const b = this;
+        navigator.clipboard.writeText(body).then(() => {
+          const prev = b.textContent;
+          b.textContent = '복사됨 ✓';
+          b.classList.add('is-copied');
+          setTimeout(() => {
+            b.textContent = prev;
+            b.classList.remove('is-copied');
+          }, 1500);
+        });
+      },
+    });
+    root.appendChild(
+      el('div', { class: 'copy-body-row' }, [copyBtn])
+    );
 
     root.appendChild(prose);
     root.appendChild(footer);
