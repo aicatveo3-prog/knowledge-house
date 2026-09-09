@@ -1447,11 +1447,13 @@ main {
   border-top: 1px solid var(--line-soft);
 }
 
-.post-footer .spacer {
-  flex: 1;
+/* 본문 복사 버튼 (상단) */
+.copy-body-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.25rem;
 }
 
-/* 본문 복사 버튼 */
 .copy-body-btn {
   border-color: var(--accent);
   color: var(--accent-ink);
