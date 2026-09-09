@@ -41,11 +41,11 @@
 
       <div class="tag-row" id="tag-row"></div>
 
-      <!-- 프롬프트 메모장 -->
+      <!-- 프롬프트 메모장1 -->
       <section class="prompt-pad" id="prompt-pad">
         <button class="prompt-pad-toggle" id="prompt-pad-toggle" type="button">
           <span class="prompt-pad-icon">📋</span>
-          <span class="prompt-pad-label">프롬프트 메모장</span>
+          <span class="prompt-pad-label">프롬프트 메모장1</span>
           <span class="prompt-pad-arrow" id="prompt-pad-arrow">›</span>
         </button>
         <div class="prompt-pad-body hidden" id="prompt-pad-body">
@@ -58,6 +58,29 @@
             <h3 class="prompt-pad-title">정리본용</h3>
             <p class="prompt-pad-text">다음 글을 정리본으로 만들어줘. 너가 스스로 글을 쓰진 말고, 글의 내용을 기반으로만 정리해. 논리적 흐름(문제→원인→전환→근거→실천)으로 재구성하고, 서술형 문장으로 읽기 쉽게. 마지막에 한 문장 요약 포함.</p>
             <button class="btn btn-sm btn-quiet prompt-pad-copy" type="button" data-copy="정리본">복사</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 프롬프트 메모장2 -->
+      <section class="prompt-pad" id="prompt-pad-2">
+        <button class="prompt-pad-toggle" id="prompt-pad-toggle-2" type="button">
+          <span class="prompt-pad-icon">📋</span>
+          <span class="prompt-pad-label">프롬프트 메모장2</span>
+          <span class="prompt-pad-arrow" id="prompt-pad-arrow-2">›</span>
+        </button>
+        <div class="prompt-pad-body hidden" id="prompt-pad-body-2">
+          <div class="prompt-pad-card">
+            <h3 class="prompt-pad-title">정리본용</h3>
+            <p class="prompt-pad-text">이 내용을 아주 쉽고 아주 자세히 가독성 좋게 구조화하여 전체 자세히 설명하는 글 형태로 작성해줘.
+
+표는 필요하면 쓰되 마구잡이로 쓰지 말고, 쉽고 살짝만 압축된 문장 형태로 자세히 작성해줘.</p>
+            <button class="btn btn-sm btn-quiet prompt-pad-copy" type="button" data-copy="정리본2">복사</button>
+          </div>
+          <div class="prompt-pad-card">
+            <h3 class="prompt-pad-title">요약본용</h3>
+            <p class="prompt-pad-text">여기에서 더 핵심만 압축된 글로 작성해줘.</p>
+            <button class="btn btn-sm btn-quiet prompt-pad-copy" type="button" data-copy="요약본2">복사</button>
           </div>
         </div>
       </section>

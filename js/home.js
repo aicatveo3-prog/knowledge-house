@@ -492,7 +492,7 @@
       setTimeout(() => window.location.reload(), 1300);
     });
 
-    // ── 프롬프트 메모장 ─────────────────────────
+    // ── 프롬프트 메모장1 ─────────────────────────
     const padToggle = document.getElementById('prompt-pad-toggle');
     const padBody = document.getElementById('prompt-pad-body');
     const padArrow = document.getElementById('prompt-pad-arrow');
@@ -504,6 +504,34 @@
       });
 
       padBody.querySelectorAll('.prompt-pad-copy').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const card = btn.closest('.prompt-pad-card');
+          const text = card.querySelector('.prompt-pad-text').textContent;
+          navigator.clipboard.writeText(text).then(() => {
+            const prev = btn.textContent;
+            btn.textContent = '복사됨 ✓';
+            btn.classList.add('is-copied');
+            setTimeout(() => {
+              btn.textContent = prev;
+              btn.classList.remove('is-copied');
+            }, 1500);
+          });
+        });
+      });
+    }
+
+    // ── 프롬프트 메모장2 ─────────────────────────
+    const padToggle2 = document.getElementById('prompt-pad-toggle-2');
+    const padBody2 = document.getElementById('prompt-pad-body-2');
+    const padArrow2 = document.getElementById('prompt-pad-arrow-2');
+
+    if (padToggle2 && padBody2) {
+      padToggle2.addEventListener('click', () => {
+        const open = padBody2.classList.toggle('hidden');
+        padArrow2.classList.toggle('is-open', !open);
+      });
+
+      padBody2.querySelectorAll('.prompt-pad-copy').forEach((btn) => {
         btn.addEventListener('click', () => {
           const card = btn.closest('.prompt-pad-card');
           const text = card.querySelector('.prompt-pad-text').textContent;
