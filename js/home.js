@@ -492,6 +492,29 @@
       setTimeout(() => window.location.reload(), 1300);
     });
 
+    // ── 스크롤 위치 기억 ─────────────────────────
+    //
+    // 글을 보고 목록으로 돌아왔을 때 보던 위치로 되돌아가게 한다.
+    // 목록은 주소(폴더·태그)마다 화면이 다르므로 주소를 열쇠로 삼는다.
+    const SCROLL_KEY = 'kh:list-scroll:' + location.pathname + location.search;
+
+    // 브라우저 자체 복원과 겹쳐 화면이 튀지 않도록 수동으로 관리
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+
+    const saveScroll = () => {
+      try {
+        sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
+      } catch (e) {
+        /* 저장이 막혀 있으면 그냥 넘어간다 */
+      }
+    };
+
+    // 페이지를 떠날 때(글로 들어갈 때 포함) 현재 위치를 저장
+    window.addEventListener('pagehide', saveScroll);
+    window.addEventListener('beforeunload', saveScroll);
+
     // ── 프롬프트 메모장1 ─────────────────────────
     const padToggle = document.getElementById('prompt-pad-toggle');
     const padBody = document.getElementById('prompt-pad-body');
@@ -548,7 +571,26 @@
       });
     }
 
-    load();
+    // 목록을 다 그린 뒤에 저장해둔 위치로 되돌린다
+    load().then(() => {
+      let saved = null;
+      try {
+        saved = sessionStorage.getItem(SCROLL_KEY);
+      } catch (e) {
+        /* 접근이 막혀 있으면 복원하지 않는다 */
+      }
+      if (saved === null) return;
+
+      const top = parseInt(saved, 10) || 0;
+      if (top <= 0) return;
+
+      // 렌더 직후 레이아웃이 잡힌 다음 두 프레임에 걸쳐 복원한다.
+      // (카드 이미지·폰트 로딩으로 높이가 살짝 늦게 확정되는 경우 대비)
+      requestAnimationFrame(() => {
+        window.scrollTo(0, top);
+        requestAnimationFrame(() => window.scrollTo(0, top));
+      });
+    });
   }
 
   init();
