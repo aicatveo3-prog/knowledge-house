@@ -27,6 +27,7 @@
   const searchNode = document.getElementById('search');
   const draftBtn = document.getElementById('toggle-drafts');
   const crumbNode = document.getElementById('breadcrumb');
+  const promptMount = document.getElementById('prompt-pad-mount');
 
   // ── 데이터 불러오기 ─────────────────────────
 
@@ -278,6 +279,75 @@
     return wrap;
   }
 
+  // ── 책(폴더)별 정리본 프롬프트 ────────────────
+  //
+  // 특정 폴더(책)를 열었을 때만, config.js 의 folderPrompts 에
+  // 그 책 전용 프롬프트가 정의돼 있으면 접이식 카드로 보여준다.
+
+  function renderPromptPad() {
+    if (!promptMount) return;
+    promptMount.innerHTML = '';
+
+    // 검색·태그·초안 화면에서는 감춘다. 폴더를 열었을 때만.
+    if (state.query.trim() || state.tag || state.showDrafts) return;
+    if (!state.folder || state.folder === F.UNFILED) return;
+
+    const prompts = cfg.folderPrompts || {};
+    const conf = prompts[state.folder];
+    if (!conf || !Array.isArray(conf.cards) || !conf.cards.length) return;
+
+    const arrow = el('span', { class: 'prompt-pad-arrow', text: '›' });
+    const toggle = el(
+      'button',
+      { class: 'prompt-pad-toggle', type: 'button' },
+      [
+        el('span', { class: 'prompt-pad-icon', text: '📋' }),
+        el('span', {
+          class: 'prompt-pad-label',
+          text: conf.label || '정리본 프롬프트',
+        }),
+        arrow,
+      ]
+    );
+
+    const body = el('div', { class: 'prompt-pad-body hidden' });
+
+    conf.cards.forEach((card) => {
+      const copyBtn = el('button', {
+        class: 'btn btn-sm btn-quiet prompt-pad-copy',
+        type: 'button',
+        text: '복사',
+      });
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(card.text || '').then(() => {
+          const prev = copyBtn.textContent;
+          copyBtn.textContent = '복사됨 ✓';
+          copyBtn.classList.add('is-copied');
+          setTimeout(() => {
+            copyBtn.textContent = prev;
+            copyBtn.classList.remove('is-copied');
+          }, 1500);
+        });
+      });
+
+      body.appendChild(
+        el('div', { class: 'prompt-pad-card' }, [
+          el('h3', { class: 'prompt-pad-title', text: card.title || '프롬프트' }),
+          el('p', { class: 'prompt-pad-text', text: card.text || '' }),
+          copyBtn,
+        ])
+      );
+    });
+
+    toggle.addEventListener('click', () => {
+      const open = body.classList.toggle('hidden');
+      arrow.classList.toggle('is-open', !open);
+    });
+
+    const pad = el('section', { class: 'prompt-pad' }, [toggle, body]);
+    promptMount.appendChild(el('div', { class: 'prompt-pad-row' }, [pad]));
+  }
+
   // ── 태그 줄 ───────────────────────────────
 
   function renderTags(posts) {
@@ -345,6 +415,7 @@
 
   function render() {
     renderBreadcrumb();
+    renderPromptPad();
     listNode.innerHTML = '';
 
     const source = state.showDrafts ? state.drafts : state.posts;
@@ -514,62 +585,6 @@
     // 페이지를 떠날 때(글로 들어갈 때 포함) 현재 위치를 저장
     window.addEventListener('pagehide', saveScroll);
     window.addEventListener('beforeunload', saveScroll);
-
-    // ── 프롬프트 메모장1 ─────────────────────────
-    const padToggle = document.getElementById('prompt-pad-toggle');
-    const padBody = document.getElementById('prompt-pad-body');
-    const padArrow = document.getElementById('prompt-pad-arrow');
-
-    if (padToggle && padBody) {
-      padToggle.addEventListener('click', () => {
-        const open = padBody.classList.toggle('hidden');
-        padArrow.classList.toggle('is-open', !open);
-      });
-
-      padBody.querySelectorAll('.prompt-pad-copy').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const card = btn.closest('.prompt-pad-card');
-          const text = card.querySelector('.prompt-pad-text').textContent;
-          navigator.clipboard.writeText(text).then(() => {
-            const prev = btn.textContent;
-            btn.textContent = '복사됨 ✓';
-            btn.classList.add('is-copied');
-            setTimeout(() => {
-              btn.textContent = prev;
-              btn.classList.remove('is-copied');
-            }, 1500);
-          });
-        });
-      });
-    }
-
-    // ── 프롬프트 메모장2 ─────────────────────────
-    const padToggle2 = document.getElementById('prompt-pad-toggle-2');
-    const padBody2 = document.getElementById('prompt-pad-body-2');
-    const padArrow2 = document.getElementById('prompt-pad-arrow-2');
-
-    if (padToggle2 && padBody2) {
-      padToggle2.addEventListener('click', () => {
-        const open = padBody2.classList.toggle('hidden');
-        padArrow2.classList.toggle('is-open', !open);
-      });
-
-      padBody2.querySelectorAll('.prompt-pad-copy').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const card = btn.closest('.prompt-pad-card');
-          const text = card.querySelector('.prompt-pad-text').textContent;
-          navigator.clipboard.writeText(text).then(() => {
-            const prev = btn.textContent;
-            btn.textContent = '복사됨 ✓';
-            btn.classList.add('is-copied');
-            setTimeout(() => {
-              btn.textContent = prev;
-              btn.classList.remove('is-copied');
-            }, 1500);
-          });
-        });
-      });
-    }
 
     // 목록을 다 그린 뒤에 저장해둔 위치로 되돌린다
     load().then(() => {
