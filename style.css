@@ -1946,6 +1946,7 @@ main {
   font-size: 0.83rem;
   line-height: 1.55;
   word-break: keep-all;
+  white-space: pre-wrap;
   user-select: all;
 }
 
