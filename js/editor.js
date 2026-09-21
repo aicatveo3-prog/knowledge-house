@@ -716,7 +716,14 @@
       /* 색인이 아직 없으면 후보 없이 진행 */
     }
 
-    const paths = window.Folders.allPaths(posts);
+    // 글에서 모은 폴더 + 설정에 선언된 폴더(책)를 함께 후보로 보여준다
+    const declared = (window.SITE_CONFIG && window.SITE_CONFIG.declaredFolders) || [];
+    const seen = new Set();
+    const paths = window.Folders
+      .allPaths(posts)
+      .concat(declared.map((d) => window.Folders.normalizePath(d)))
+      .filter((path) => path && !seen.has(path) && seen.add(path))
+      .sort(window.Folders.naturalCompare);
     $folderOptions.innerHTML = '';
     paths.forEach((path) => {
       $folderOptions.appendChild(el('option', { value: path }));

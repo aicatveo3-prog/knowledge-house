@@ -108,7 +108,7 @@
     }
 
     state.posts = posts;
-    state.tree = F.buildTree(posts);
+    state.tree = F.buildTree(posts, cfg.declaredFolders);
     render();
   }
 

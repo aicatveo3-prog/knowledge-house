@@ -101,7 +101,7 @@
    *    direct: 이 폴더에 바로 담긴 글 수
    *    total:  하위 폴더까지 합친 글 수
    */
-  function buildTree(posts) {
+  function buildTree(posts, declared) {
     const nodes = new Map();
 
     function ensure(path) {
@@ -132,6 +132,13 @@
         ensure(cursor).total += 1;
         cursor = parentOf(cursor);
       }
+    });
+
+    // 글이 없어도 항상 보여줄 폴더(책)를 만들어 둔다.
+    // 이미 글이 있는 폴더면 그대로 두고, 없으면 빈 폴더(글 0편)로 나타난다.
+    (declared || []).forEach((raw) => {
+      const path = normalizePath(raw);
+      if (path) ensure(path);
     });
 
     // 형제끼리 이름순으로
