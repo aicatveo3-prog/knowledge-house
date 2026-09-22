@@ -344,6 +344,7 @@
     root.appendChild(footer);
 
     addHeadingAnchors(prose);
+    jumpToHash();
     startProgress();
   }
 
@@ -563,6 +564,37 @@
         })
       );
     });
+  }
+
+  /**
+   * 주소 끝에 붙은 #앵커 자리로 옮겨간다.
+   *
+   * 본문은 파일을 받아온 뒤에 그리므로, 브라우저가 스스로 앵커를 찾는
+   * 시점에는 아직 제목이 화면에 없다. 그래서 다 그린 뒤 한 번 더 찾아간다.
+   * 위에 붙어 있는 헤더가 제목을 가리지 않도록 그 높이만큼 여유를 둔다.
+   */
+  function jumpToHash() {
+    const raw = location.hash.slice(1);
+    if (!raw) return;
+
+    let target = null;
+    try {
+      target = document.getElementById(decodeURIComponent(raw));
+    } catch (e) {
+      target = document.getElementById(raw);
+    }
+    if (!target) return;
+
+    const siteHeader = document.querySelector('.site-header');
+    const gap = (siteHeader ? siteHeader.offsetHeight : 53) + 16;
+
+    // 글꼴과 표 폭이 잡힌 다음에 재야 자리가 어긋나지 않는다
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        const top = target.getBoundingClientRect().top + window.scrollY - gap;
+        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      })
+    );
   }
 
   // ── 뒤로가기 띠가 화면 위에 붙었는지 살핀다 ──
