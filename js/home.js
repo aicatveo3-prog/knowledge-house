@@ -315,10 +315,8 @@
 
       // 읽을거리 자체의 제목이 색인에 있으면 그걸 쓰고,
       // 없으면 어느 글에 딸린 읽을거리인지라도 알려준다.
+      // 카드에는 제목만 보여준다. (분량·미리보기는 글을 열면 보인다)
       const headline = info.title || post.title;
-
-      const meta = [post.title];
-      if (info.readingTime) meta.push(`${info.readingTime}분`);
 
       list.appendChild(
         el('li', {}, [
@@ -334,16 +332,6 @@
             [
               el('span', { class: 'reading-pad-body' }, [
                 el('span', { class: 'reading-pad-title', text: headline }),
-                el('span', {
-                  class: 'reading-pad-meta',
-                  text: meta.join(' · '),
-                }),
-                info.excerpt
-                  ? el('span', {
-                      class: 'reading-pad-excerpt',
-                      text: info.excerpt,
-                    })
-                  : null,
               ]),
               el('span', { class: 'reading-pad-arrow', text: '→' }),
             ]
