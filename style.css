@@ -56,6 +56,12 @@
   --measure-wide: 52rem;
   --gutter: 1.5rem;
 
+  /*
+   * 붙어 있는 헤더의 높이 — 그 아래에 붙는 요소들이 기준으로 쓴다.
+   * app.js 가 실제로 그려진 높이를 재서 덮어쓰므로, 아래 값은 그 전까지의 대비값이다.
+   */
+  --header-h: 3.5rem;
+
   /* 모양 */
   --r-sm: 6px;
   --r-md: 10px;
@@ -964,13 +970,39 @@ main {
   border-bottom: 1px solid var(--line-soft);
 }
 
-/* 목록으로 돌아가기 — 누를 수 있다는 게 보여야 한다 */
+/*
+ * 목록으로 돌아가기 — 누를 수 있다는 게 보여야 한다.
+ *
+ * 글을 읽으며 내려가도 계속 따라오도록 헤더 바로 밑에 붙는다.
+ * 카드 안쪽 여백만큼 좌우로 넓혀서, 스크롤되어 올라오는 본문을
+ * 띠가 완전히 가리도록 한다. (배경색이 카드와 같아 평소엔 보이지 않는다)
+ */
 .post-back {
+  position: sticky;
+  top: var(--header-h);
+  z-index: 25;
   display: flex;
   align-items: center;
   gap: 0.35rem;
   flex-wrap: wrap;
-  margin-bottom: 1.5rem;
+  margin: 0 calc(var(--card-pad) * -1) 1.5rem;
+  padding: 0.55rem var(--card-pad) 0.6rem;
+  background: var(--surface);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  border-bottom: 1px solid transparent;
+}
+
+/* 화면 위에 붙은 순간에만 경계선을 띄워 본문과 구분한다 */
+.post-back.is-stuck {
+  border-bottom-color: var(--line-soft);
+  box-shadow: 0 4px 12px -8px rgba(0, 0, 0, 0.28);
+}
+
+/* 붙었는지 재는 표식 — 눈에 보이지 않는다 */
+.back-sentinel {
+  height: 1px;
+  margin-bottom: -1px;
+  pointer-events: none;
 }
 
 .back-btn {
@@ -1502,7 +1534,7 @@ main {
 
 .editor-bar {
   position: sticky;
-  top: 3.3rem;
+  top: var(--header-h);
   z-index: 30;
   display: flex;
   align-items: center;
@@ -2005,6 +2037,8 @@ main {
   :root {
     --gutter: 1rem;
     --card-pad: 1.4rem;
+    /* 단추가 커져 헤더도 함께 높아진다 (app.js 가 실측값으로 덮어쓴다) */
+    --header-h: 4.1rem;
   }
 
   body {
@@ -2077,12 +2111,15 @@ main {
     padding: 0.35rem 0.45rem;
   }
 
-  .editor-bar {
-    top: 3.2rem;
-  }
-
   .title-input {
     margin-top: 1.75rem;
+  }
+
+  /* 붙어 있는 띠는 좁은 화면에서 높이를 조금 줄인다 */
+  .post-back {
+    padding-top: 0.45rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.25rem;
   }
 
   /* 아래쪽 빈 공간이 화면 하나를 잡아먹지 않도록 */
@@ -2197,8 +2234,18 @@ main {
   .post-footer,
   .toast,
   .progress,
+  .back-sentinel,
   .heading-anchor {
     display: none !important;
+  }
+
+  /* 종이에서는 따라다닐 필요가 없다 */
+  .post-back {
+    position: static;
+    margin: 0 0 1rem;
+    padding: 0;
+    border-bottom: none;
+    box-shadow: none;
   }
 
   body {

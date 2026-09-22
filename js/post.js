@@ -222,7 +222,10 @@
       )
     );
 
-    header.appendChild(backNav);
+    // backNav 는 header 안에 두지 않는다.
+    // position: sticky 는 부모 영역 안에서만 붙어 있기 때문에,
+    // header 안에 있으면 제목이 화면을 벗어나는 순간 함께 사라진다.
+    // 글 전체를 따라오도록 article 의 직계 자식으로 붙인다. (아래 조립부 참고)
 
     header.appendChild(el('h1', { text: title }));
 
@@ -304,6 +307,10 @@
         ])
       );
     }
+
+    // 스크롤을 내려도 따라오도록 article 바로 밑에 둔다
+    root.appendChild(backNav);
+    watchStuck(backNav);
 
     root.appendChild(header);
 
@@ -556,6 +563,38 @@
         })
       );
     });
+  }
+
+  // ── 뒤로가기 띠가 화면 위에 붙었는지 살핀다 ──
+  //
+  // 붙은 순간에만 아래쪽 경계선을 보여 주기 위한 장치다.
+  // 띠 바로 위에 눈에 보이지 않는 표식을 두고,
+  // 그 표식이 헤더 밑으로 밀려 올라가면 "붙었다"고 판단한다.
+
+  let stuckObserver = null;
+
+  function watchStuck(nav) {
+    // render() 는 root.innerHTML 을 비우므로 이전 관찰을 반드시 끊어 준다
+    if (stuckObserver) {
+      stuckObserver.disconnect();
+      stuckObserver = null;
+    }
+
+    if (!('IntersectionObserver' in window)) return;
+
+    const mark = el('div', { class: 'back-sentinel', 'aria-hidden': 'true' });
+    nav.parentNode.insertBefore(mark, nav);
+
+    const siteHeader = document.querySelector('.site-header');
+    const headerH = siteHeader ? siteHeader.offsetHeight : 53;
+
+    stuckObserver = new IntersectionObserver(
+      (entries) => {
+        nav.classList.toggle('is-stuck', !entries[0].isIntersecting);
+      },
+      { rootMargin: `-${headerH + 1}px 0px 0px 0px`, threshold: 0 }
+    );
+    stuckObserver.observe(mark);
   }
 
   // ── 읽기 진행 표시 ─────────────────────────
