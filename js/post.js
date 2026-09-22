@@ -314,6 +314,10 @@
 
     root.appendChild(header);
 
+    // 읽을거리 카드 — 태그 아래, 버전 탭 위의 별도 자리
+    const readingCard = buildReadingCard();
+    if (readingCard) root.appendChild(readingCard);
+
     const switcher = buildSwitcher();
     if (switcher) root.appendChild(switcher);
 
@@ -349,11 +353,99 @@
   }
 
   /** 정리 / 요약본 / 원문 전환 */
+  /** 읽을거리 글의 첫 제목 — 카드에 보여줄 이름 */
+  function readingHeadline() {
+    const doc = state.docs.reading;
+    if (!doc) return '읽을거리';
+    const parsed = MD.parseFrontmatter(doc.text);
+    const m = parsed.body.match(/^#{1,4}[ \t]+(.+)$/m);
+    let t = m ? m[1].trim() : parsed.meta.title || '읽을거리';
+    // 카드에 이미 아이콘이 있으므로 제목 앞 이모지는 덜어낸다
+    t = t
+      .replace(
+        /^[\u231A-\u27BF\u2600-\u26FF\u2B00-\u2BFF\uFE0F\uD83C-\uDBFF\uDC00-\uDFFF]+\s*/,
+        ''
+      )
+      .trim();
+    return t || '읽을거리';
+  }
+
+  /**
+   * 읽을거리 카드
+   *
+   * 읽을거리는 글의 주장을 따로 검증한 별개의 글이라, 버전 탭(글/정리본1)과
+   * 섞지 않고 그 위에 독립된 카드로 둔다.
+   *   - 읽을거리가 있으면      → 그리로 가는 카드
+   *   - 지금 읽을거리를 보는 중 → '보는 중' 표시 (돌아가긴 아래 탭으로)
+   *   - 없고 편집 권한이 있으면 → 추가 카드
+   */
+  function buildReadingCard() {
+    if (isDraft) return null;
+
+    const hasReading = !!state.docs.reading;
+    const canEdit = Store.hasToken();
+
+    if (!hasReading) {
+      if (!canEdit) return null;
+      return el(
+        'a',
+        {
+          class: 'post-reading-card is-add',
+          href:
+            'write.html?id=' + encodeURIComponent(id) + '&kind=reading',
+          title: '읽을거리 추가',
+        },
+        [
+          el('span', { class: 'post-reading-icon', text: '＋' }),
+          el('span', { class: 'post-reading-body' }, [
+            el('span', { class: 'post-reading-label', text: '읽을거리 추가' }),
+          ]),
+        ]
+      );
+    }
+
+    const viewing = state.view === 'reading';
+    const headline = readingHeadline();
+
+    if (viewing) {
+      return el('div', { class: 'post-reading-card is-current' }, [
+        el('span', { class: 'post-reading-icon', text: '📎' }),
+        el('span', { class: 'post-reading-body' }, [
+          el('span', {
+            class: 'post-reading-label',
+            text: '읽을거리 · 지금 보는 중',
+          }),
+          el('span', { class: 'post-reading-title', text: headline }),
+        ]),
+      ]);
+    }
+
+    return el(
+      'a',
+      {
+        class: 'post-reading-card',
+        href: 'post.html?id=' + encodeURIComponent(id) + '&view=reading',
+      },
+      [
+        el('span', { class: 'post-reading-icon', text: '📎' }),
+        el('span', { class: 'post-reading-body' }, [
+          el('span', { class: 'post-reading-label', text: '읽을거리' }),
+          el('span', { class: 'post-reading-title', text: headline }),
+        ]),
+        el('span', { class: 'post-reading-arrow', text: '→' }),
+      ]
+    );
+  }
+
   function buildSwitcher() {
     if (isDraft) return null;
 
     const canEdit = Store.hasToken();
-    const existing = Docs.companions().filter((k) => state.docs[k.key]);
+    // 읽을거리는 '같은 글의 다른 버전'이 아니라 따로 검증한 별개의 글이라
+    // 이 탭 줄에 두지 않고 위쪽에 별도 카드로 보여준다.
+    const existing = Docs.companions().filter(
+      (k) => k.key !== 'reading' && state.docs[k.key]
+    );
 
     // 딸린 문서가 없고 만들 권한도 없으면 탭을 감춘다
     if (!existing.length && !canEdit) return null;
@@ -366,6 +458,7 @@
       '&view=' + key;
 
     Docs.all().forEach((kind) => {
+      if (kind.key === 'reading') return; // 읽을거리는 별도 카드로 (buildReadingCard)
       const has = kind.key === 'main' || !!state.docs[kind.key];
 
       if (has) {

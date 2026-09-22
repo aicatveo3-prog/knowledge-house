@@ -2163,6 +2163,88 @@ main {
   color: var(--accent-ink);
 }
 
+/*
+ * 본문 페이지의 읽을거리 카드
+ * 버전 탭(글/정리본1) 바로 위에 독립된 자리로 둔다.
+ */
+.post-reading-card {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 1.4rem 0 0.5rem;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
+  border-radius: var(--r-md);
+  background: var(--accent-soft);
+  transition: box-shadow 0.18s, transform 0.18s, border-color 0.18s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a.post-reading-card:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+    box-shadow: var(--card-shadow);
+  }
+}
+
+.post-reading-card.is-current {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+}
+
+.post-reading-icon {
+  flex-shrink: 0;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.post-reading-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.post-reading-label {
+  color: var(--accent-ink);
+  font-size: 0.74rem;
+  font-weight: 620;
+  letter-spacing: 0.01em;
+}
+
+.post-reading-title {
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  letter-spacing: -0.01em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.post-reading-arrow {
+  flex-shrink: 0;
+  color: var(--accent);
+  font-size: 0.9rem;
+  transition: transform 0.18s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a.post-reading-card:hover .post-reading-arrow {
+    transform: translateX(3px);
+  }
+}
+
+/* 편집 권한이 있을 때만 보이는 '추가' 카드 */
+.post-reading-card.is-add {
+  background: var(--bg-soft);
+  border-style: dashed;
+}
+
+.post-reading-card.is-add .post-reading-label {
+  color: var(--ink-soft);
+}
+
 /* 작은 화면 =============================================================== */
 
 /* 중간 화면 — 카드 안쪽 여백을 줄인다 */
