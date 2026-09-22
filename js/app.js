@@ -632,9 +632,41 @@
 
   // ── 초기화 ────────────────────────────────
 
+  // ── 붙어 있는 요소들의 기준선 ────────────────
+  //
+  // 헤더 밑에 붙는 요소(뒤로가기 띠, 편집 막대)는 헤더 높이를 알아야 한다.
+  // 값을 CSS 에 적어 두면 글자 크기나 단추 크기가 바뀔 때마다 어긋나므로,
+  // 실제로 그려진 높이를 재서 --header-h 에 넣어 준다.
+
+  function syncHeaderHeight() {
+    const host = document.querySelector('.site-header');
+    if (!host) return;
+    const h = Math.round(host.getBoundingClientRect().height);
+    if (h > 0) {
+      document.documentElement.style.setProperty('--header-h', h + 'px');
+    }
+  }
+
+  function watchHeaderHeight() {
+    syncHeaderHeight();
+
+    // 웹폰트가 늦게 올라와 높이가 바뀌는 경우까지 한 번 더 맞춘다
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(syncHeaderHeight);
+    }
+
+    if ('ResizeObserver' in window) {
+      const host = document.querySelector('.site-header');
+      if (host) new ResizeObserver(syncHeaderHeight).observe(host);
+    } else {
+      window.addEventListener('resize', syncHeaderHeight, { passive: true });
+    }
+  }
+
   function init(active) {
     applyTheme();
     renderHeader(active);
+    watchHeaderHeight();
 
     const Store = window.Store;
 
