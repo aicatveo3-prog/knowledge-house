@@ -17,6 +17,7 @@
     { key: 'original', label: '원문', dirKey: 'originalsDir' },
     { key: 'summary2', label: '요약본2', dirKey: 'summaries2Dir' },
     { key: 'main2', label: '정리본1', dirKey: 'posts2Dir' },
+    { key: 'reading', label: '읽을거리', dirKey: 'readingsDir' },
   ];
 
   function all() {

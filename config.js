@@ -30,10 +30,12 @@ window.SITE_CONFIG = {
   //   ↔ originals/2026-09-03-챕터1.md  (원문)
   //   ↔ posts2/2026-09-03-챕터1.md     (정리2)
   //   ↔ summaries2/2026-09-03-챕터1.md (요약본2)
+  //   ↔ readings/2026-09-03-챕터1.md   (읽을거리 — 글의 주장을 따로 검증·확장한 글)
   summariesDir: 'summaries',
   originalsDir: 'originals',
   posts2Dir: 'posts2',
   summaries2Dir: 'summaries2',
+  readingsDir: 'readings',
 
   // ── 책(폴더)별 정리본 프롬프트 ─────────────────────────────
   // 특정 폴더(책)를 열었을 때만 그 책 전용 프롬프트 카드를 보여줍니다.

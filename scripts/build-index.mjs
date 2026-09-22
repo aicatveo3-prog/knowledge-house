@@ -18,6 +18,7 @@ const COMPANIONS = [
   { dir: 'originals', flag: 'hasOriginal' },
   { dir: 'posts2', flag: 'hasMain2' },
   { dir: 'summaries2', flag: 'hasSummary2' },
+  { dir: 'readings', flag: 'hasReading' },
 ];
 const OUT_FILE = path.join(OUT_DIR, 'posts.json');
 
@@ -96,6 +97,17 @@ function readingTime(body) {
   return Math.max(1, Math.round(chars / 500));
 }
 
+/** 본문에 나오는 첫 제목 — 읽을거리 카드의 제목으로 쓴다 */
+function headlineOf(body) {
+  const m = body.match(/^#{1,4}[ \t]+(.+)$/m);
+  if (!m) return '';
+  // 카드에 이미 아이콘이 붙으므로 제목 앞 이모지는 덜어낸다
+  return m[1]
+    .trim()
+    .replace(/^[\u231A-\u27BF\u2B00-\u2BFF\uFE0F\uD83C-\uDBFF\uDC00-\uDFFF]+\s*/, '')
+    .trim();
+}
+
 /** 폴더 경로 다듬기 — js/folders.js 의 normalizePath 와 같은 규칙 */
 function normalizeFolder(value) {
   return String(value == null ? '' : value)
@@ -156,6 +168,25 @@ async function main() {
     posts.forEach((p) => {
       p[companion.flag] = ids.has(p.id);
     });
+  }
+
+  // 읽을거리는 책 첫 화면의 카드에 제목·요약이 드러나야 하므로
+  // 있다는 표시만으로는 부족하다. 내용까지 읽어 색인에 담아둔다.
+  for (const p of posts) {
+    if (!p.hasReading) continue;
+    try {
+      const raw = await readFile(path.join('readings', `${p.id}.md`), 'utf8');
+      const { meta, body } = parseFrontmatter(raw);
+      p.reading = {
+        title: headlineOf(body) || meta.title || p.title,
+        // 카드에는 글의 첫 문장이 와야 한다. 맨 위에 붙은 안내·인용
+        // 블록은 카드에서 읽어봐야 도움이 안 되므로 덜어낸다.
+        excerpt: excerpt(body.replace(/^(?:>.*\n?)+/gm, ''), 110),
+        readingTime: readingTime(body),
+      };
+    } catch (e) {
+      /* 색인 도중 읽기에 실패하면 카드는 글 제목으로 대신한다 */
+    }
   }
 
   posts.sort((a, b) => {

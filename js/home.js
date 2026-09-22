@@ -28,6 +28,7 @@
   const draftBtn = document.getElementById('toggle-drafts');
   const crumbNode = document.getElementById('breadcrumb');
   const promptMount = document.getElementById('prompt-pad-mount');
+  const readingMount = document.getElementById('reading-mount');
 
   // ── 데이터 불러오기 ─────────────────────────
 
@@ -218,6 +219,9 @@
     if (post.hasOriginal) {
       meta.push(el('span', { class: 'badge badge-original', text: '원문' }));
     }
+    if (post.hasReading) {
+      meta.push(el('span', { class: 'badge badge-reading', text: '읽을거리' }));
+    }
     if (post.pending) {
       meta.push(el('span', { class: 'badge badge-pending', text: '반영 중' }));
     }
@@ -277,6 +281,94 @@
     });
     wrap.appendChild(ul);
     return wrap;
+  }
+
+  // ── 이 책의 읽을거리 ──────────────────────────
+  //
+  // 읽을거리(readings/)는 글의 주장을 따로 검증하거나 넓힌 곳이다.
+  // 본문 안쪽 탭에만 두면 있는 줄도 모르고 지나치기 쉬워서,
+  // 책을 열었을 때 목록보다 먼저 보이도록 맨 위에 카드로 올려둔다.
+  //
+  // 하위 폴더의 읽을거리까지 함께 모으므로, 책을 열면 그 책에 딸린
+  // 읽을거리를 한자리에서 볼 수 있다.
+
+  function renderReadingPad() {
+    if (!readingMount) return;
+    readingMount.innerHTML = '';
+
+    // 검색·태그·초안 화면에서는 감춘다. 폴더를 열었을 때만.
+    if (state.query.trim() || state.tag || state.showDrafts) return;
+    if (!state.folder || state.folder === F.UNFILED) return;
+
+    // 이 폴더와 그 아래 폴더의 글 중 읽을거리가 딸린 것만
+    const hits = state.posts.filter(
+      (p) => p.hasReading && F.isInside(p.folder, state.folder)
+    );
+    if (!hits.length) return;
+
+    const sorted = F.sortPosts(hits, F.detectSortMode(hits));
+
+    const list = el('ul', { class: 'reading-pad-list' });
+
+    sorted.forEach((post) => {
+      const info = post.reading || {};
+
+      // 읽을거리 자체의 제목이 색인에 있으면 그걸 쓰고,
+      // 없으면 어느 글에 딸린 읽을거리인지라도 알려준다.
+      const headline = info.title || post.title;
+
+      const meta = [post.title];
+      if (info.readingTime) meta.push(`${info.readingTime}분`);
+
+      list.appendChild(
+        el('li', {}, [
+          el(
+            'a',
+            {
+              class: 'reading-pad-item',
+              href:
+                'post.html?id=' +
+                encodeURIComponent(post.id) +
+                '&view=reading',
+            },
+            [
+              el('span', { class: 'reading-pad-body' }, [
+                el('span', { class: 'reading-pad-title', text: headline }),
+                el('span', {
+                  class: 'reading-pad-meta',
+                  text: meta.join(' · '),
+                }),
+                info.excerpt
+                  ? el('span', {
+                      class: 'reading-pad-excerpt',
+                      text: info.excerpt,
+                    })
+                  : null,
+              ]),
+              el('span', { class: 'reading-pad-arrow', text: '→' }),
+            ]
+          ),
+        ])
+      );
+    });
+
+    readingMount.appendChild(
+      el('section', { class: 'reading-pad' }, [
+        el('div', { class: 'reading-pad-head' }, [
+          el('span', { class: 'reading-pad-icon', text: '📎' }),
+          el('h2', { class: 'reading-pad-label', text: '읽을거리' }),
+          el('span', {
+            class: 'reading-pad-count',
+            text: `${sorted.length}편`,
+          }),
+        ]),
+        el('p', {
+          class: 'reading-pad-hint',
+          text: '이 책의 주장을 실제 데이터로 따로 검증해 본 글입니다.',
+        }),
+        list,
+      ])
+    );
   }
 
   // ── 책(폴더)별 정리본 프롬프트 ────────────────
@@ -415,6 +507,7 @@
 
   function render() {
     renderBreadcrumb();
+    renderReadingPad();
     renderPromptPad();
     listNode.innerHTML = '';
 
